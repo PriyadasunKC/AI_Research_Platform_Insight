@@ -1,0 +1,364 @@
+<title>Claim Classification in KG-Grounded Essay Fact-Checking</title>
+<style>
+:root{
+  --bg:#EFEEE7; --bg-raised:#F8F7F2; --ink:#232420; --ink-dim:#5B5C55;
+  --rule:#D9D7CB; --accent:#2B5B6B; --accent-soft:#DCE8EA;
+  --flag:#9A3324; --flag-soft:#F3E1DD; --gold:#8C6D33; --gold-soft:#EFE5CE;
+  --good:#3F6B3F; --good-soft:#E1EBDD;
+  --code-bg:#1E2321; --code-ink:#DCE3DA; --code-accent:#8FC1BF;
+  --shadow: 0 1px 2px rgba(35,36,32,.06), 0 6px 20px rgba(35,36,32,.05);
+}
+:root[data-theme="dark"]{
+  --bg:#1B1C19; --bg-raised:#232420; --ink:#E7E5DA; --ink-dim:#A6A499;
+  --rule:#3A3B34; --accent:#7FB6C4; --accent-soft:#233238;
+  --flag:#E28A76; --flag-soft:#3A2621; --gold:#D3B871; --gold-soft:#332C1C;
+  --good:#8FC08F; --good-soft:#22301F;
+  --code-bg:#12140F; --code-ink:#D9E2D5; --code-accent:#9FD3D0;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1C19; --bg-raised:#232420; --ink:#E7E5DA; --ink-dim:#A6A499;
+    --rule:#3A3B34; --accent:#7FB6C4; --accent-soft:#233238;
+    --flag:#E28A76; --flag-soft:#3A2621; --gold:#D3B871; --gold-soft:#332C1C;
+    --good:#8FC08F; --good-soft:#22301F;
+    --code-bg:#12140F; --code-ink:#D9E2D5; --code-accent:#9FD3D0;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"Segoe UI","Inter",sans-serif;
+  line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.si{ font-family:'Noto Sans Sinhala','Iskoola Pota',sans-serif; }
+
+.page{ max-width:760px; margin:0 auto; padding:64px 24px 120px; }
+
+/* Header block */
+.doc-head{ margin-bottom:56px; }
+.doc-kicker{
+  font-size:.72em; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:14px;
+}
+.doc-title{
+  font-family:"Iowan Old Style","Palatino Linotype","URW Palladio L",Georgia,serif;
+  font-size:2.15em; font-weight:600; line-height:1.18; color:var(--ink);
+  text-wrap:balance; margin:0 0 12px 0;
+}
+.doc-sub{ font-size:1.02em; color:var(--ink-dim); max-width:58ch; margin:0 0 22px 0; }
+.doc-meta{
+  display:flex; flex-wrap:wrap; gap:6px 22px; font-size:.82em; color:var(--ink-dim);
+  border-top:1px solid var(--rule); padding-top:16px;
+  font-variant-numeric:tabular-nums;
+}
+.doc-meta strong{ color:var(--ink); font-weight:600; }
+
+/* Section structure */
+section{ margin-bottom:52px; }
+.sec-head{
+  display:flex; align-items:baseline; gap:14px; margin-bottom:18px;
+  border-bottom:1px solid var(--rule); padding-bottom:10px;
+}
+.sec-num{
+  font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  font-size:1em; color:var(--gold); font-weight:600; flex:none;
+}
+h2{
+  font-family:"Iowan Old Style","Palatino Linotype","URW Palladio L",Georgia,serif;
+  font-size:1.38em; font-weight:600; margin:0; color:var(--ink);
+}
+h3{
+  font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  font-size:1.08em; font-weight:600; margin:26px 0 10px 0; color:var(--ink);
+}
+p{ margin:0 0 14px 0; max-width:66ch; }
+ul, ol{ margin:0 0 14px 0; padding-left:1.3em; max-width:62ch; }
+li{ margin-bottom:6px; }
+strong{ color:var(--ink); }
+code{
+  font-family:"Cascadia Code","SF Mono",Consolas,monospace; font-size:.88em;
+  background:var(--bg-raised); border:1px solid var(--rule); border-radius:4px;
+  padding:.1em .38em;
+}
+
+/* status chips */
+.chip{
+  display:inline-flex; align-items:center; gap:6px; font-size:.7em; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:20px;
+  flex:none;
+}
+.chip-bug{ background:var(--flag-soft); color:var(--flag); }
+.chip-gap{ background:var(--accent-soft); color:var(--accent); }
+.chip-question{ background:var(--gold-soft); color:var(--gold); }
+
+/* callout / evidence card */
+.card{
+  background:var(--bg-raised); border:1px solid var(--rule); border-radius:10px;
+  padding:18px 22px; margin:16px 0; box-shadow:var(--shadow);
+}
+.card-flag{ border-left:3px solid var(--flag); }
+.card-gap{ border-left:3px solid var(--accent); }
+.card-label{
+  font-size:.68em; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-dim); margin-bottom:8px;
+}
+.quote{
+  font-style:normal; color:var(--ink); font-size:1.02em; line-height:1.85;
+  padding:2px 0 10px 0; border-bottom:1px dashed var(--rule); margin-bottom:10px;
+}
+.kv{ font-size:.86em; color:var(--ink-dim); margin:4px 0; }
+.kv b{ color:var(--ink); font-weight:600; }
+
+/* taxonomy table */
+.tbl-wrap{ overflow-x:auto; margin:16px 0; border-radius:10px; border:1px solid var(--rule); }
+table{ border-collapse:collapse; width:100%; min-width:640px; background:var(--bg-raised); }
+th, td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top; font-size:.88em; }
+th{
+  font-size:.7em; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-dim); background:var(--bg);
+}
+tr:last-child td{ border-bottom:none; }
+td .type-tag{ font-weight:700; color:var(--accent); }
+
+/* code block */
+pre{
+  background:var(--code-bg); color:var(--code-ink); border-radius:10px;
+  padding:18px 20px; overflow-x:auto; font-family:"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:.82em; line-height:1.7; margin:14px 0;
+}
+pre .k{ color:var(--code-accent); }
+pre .c{ color:#8B8F84; }
+
+/* recommendation list */
+.rec{
+  display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--rule);
+}
+.rec:last-child{ border-bottom:none; }
+.rec-mark{
+  flex:none; width:26px; height:26px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:.78em; font-weight:700; margin-top:2px;
+}
+.rec-do{ background:var(--good-soft); color:var(--good); }
+.rec-later{ background:var(--gold-soft); color:var(--gold); }
+.rec-body b{ display:block; margin-bottom:2px; }
+.rec-body span{ color:var(--ink-dim); font-size:.92em; }
+
+.divider{
+  display:flex; align-items:center; gap:10px; margin:48px 0; color:var(--rule);
+}
+.divider::before, .divider::after{ content:""; height:1px; background:var(--rule); flex:1; }
+.divider span{ font-size:.9em; color:var(--gold); }
+
+footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); font-size:.78em; color:var(--ink-dim); }
+</style>
+
+<div class="page">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Internal technical memo — Stage 2</div>
+    <h1 class="doc-title">Claim Classification in KG-Grounded Essay Fact-Checking</h1>
+    <p class="doc-sub">Findings from live essay runs against the Dutugämuṇu and Vijayabāhu&nbsp;II test cases, and a proposed path to fix them without discarding the current scoring formula.</p>
+    <div class="doc-meta">
+      <span><strong>Project</strong> Sinhala Historical Essay Accuracy Scoring System</span>
+      <span><strong>Module</strong> 2 · 214161L</span>
+      <span><strong>Institution</strong> University of Moratuwa</span>
+      <span><strong>Date</strong> 2026-07-16</span>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">§0</span><h2>Executive summary</h2></div>
+    <p>Two essay runs surfaced three distinct problems, only one of which is a straightforward code bug. The other two are a genuine methodological gap in how the pipeline turns essay sentences into a CORRECT / INCORRECT / UNVERIFIABLE verdict — and that gap directly shapes what <code>accuracy_score</code> and <code>coverage_ratio</code> mean in the thesis write-up, so it should be a deliberate decision rather than a silent patch.</p>
+    <ul>
+      <li><strong>A fixable bug</strong> — <code>ALSO_KNOWN_AS</code> facts are withheld from the prompt entirely, so a genuinely KG-verifiable claim (an alternate royal title) was marked UNVERIFIABLE for no reason other than Claude never being shown the evidence.</li>
+      <li><strong>A model-reliability symptom</strong> — one claim was returned with a verdict of <code>INCORRECT</code> whose own explanation text argues for, and ends by declaring, <code>UNVERIFIABLE</code>. The structured field and the free-text reasoning disagree.</li>
+      <li><strong>A design gap</strong> — the pipeline currently has no way to tell "this is a real historical fact the KG hasn't modeled yet" apart from "this sentence isn't a factual claim at all" (opinion, character study, rhetorical flourish). Both collapse into the same UNVERIFIABLE bucket, which depresses <code>coverage_ratio</code> for well-written essays for reasons that have nothing to do with historical accuracy.</li>
+    </ul>
+    <p>§5 lays out the fix for all three as one coherent change, with a revised prompt and schema in §6, and the specific decisions that need your sign-off in §7.</p>
+  </section>
+
+  <div class="divider"><span>Findings</span></div>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">§1</span><h2>Confirmed bug — alias facts are invisible to Claude</h2>
+      <span class="chip chip-bug">Bug</span>
+    </div>
+    <p><code>kg_fact_retriever.get_facts_for_king()</code> deliberately strips every <code>ALSO_KNOWN_AS</code> triple before building the fact list sent to Claude, on the original reasoning that "those are used for name resolution only." That reasoning missed a second, legitimate use: essays often state a person's alternate name or title as a fact in its own right — and the KG already records exactly that.</p>
+
+    <div class="card card-flag">
+      <div class="card-label">Evidence — verified directly against the KG export</div>
+      <p class="kv"><b>KG edge:</b> <span class="si">II වන විජයබාහු රජු —ALSO_KNOWN_AS→ පණ්ඩිත විජයබාහු</span> (one of 4 <code>ALSO_KNOWN_AS</code> edges for this king)</p>
+      <p class="kv"><b>Essay claim:</b> <span class="si">"...පණ්ඩිත විජයබාහු යන විරුදාවලියෙන් පිදුම් ලැබූ මෙතුමා..."</span> — "he who was honored with the title Pandita Vijayabahu"</p>
+      <p class="kv"><b>Facts Claude actually received:</b> 7 KG facts for this king — <b>zero</b> of them <code>ALSO_KNOWN_AS</code></p>
+      <p class="kv"><b>Result:</b> marked <code>UNVERIFIABLE</code> — not a reasoning failure, an evidence-withholding failure</p>
+    </div>
+
+    <p><strong>Fix:</strong> include <code>ALSO_KNOWN_AS</code> triples in <code>format_facts_for_prompt()</code>'s output (labelled as what they are, e.g. <span class="si">"X — ALSO_KNOWN_AS — Y"</span>), while leaving their separate role in <code>get_all_kg_names_for_king()</code> — resolving which names belong to which king — untouched. Same edge type, two different consumers; only one of them should ever have excluded it.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">§2</span><h2>Verdict / explanation disagreement</h2>
+      <span class="chip chip-bug">Reliability</span>
+    </div>
+    <p>One claim's rendered badge read <code>INCORRECT</code>, while its own explanation text reasons through the evidence and explicitly concludes with the words <em>"Marking UNVERIFIABLE due to the motivational claim being unverifiable from KG."</em> The UI renders whatever string sits in the <code>verdict</code> JSON field verbatim — this is not a display bug, Claude's structured output and its own free-text reasoning genuinely disagreed on the same call.</p>
+
+    <div class="card card-flag">
+      <div class="card-label">The claim in question</div>
+      <p class="quote si">යුද්ධයෙන් පසු ඇති වූ මානසික පීඩාව සමනය කරගනු වස් සහ ශාසනයට කළ උපකාරයක් ලෙස ඔහු මිරිසවැටිය චෛත්‍යය සහ ලෝවාමහාපාය ඉදිකළේය.</p>
+      <p class="kv"><b>Rendered verdict:</b> INCORRECT</p>
+      <p class="kv"><b>Claude's own closing line:</b> "...this is a mixed case. Marking UNVERIFIABLE due to the motivational claim being unverifiable from KG."</p>
+    </div>
+
+    <p>This is not an isolated glitch — it is a symptom of §3 below. The sentence bundles a KG-confirmed fact (built Mirisavetiya and Lōhaprāsāda / Lōvamahāpāya — KG facts&nbsp;2&amp;3) with an unconfirmable motive clause ("to relieve wartime mental distress"). Forced into exactly one of three buckets, the model wavers — and per its own stated rule ("INCORRECT only if it directly contradicts a KG fact"), <em>neither</em> INCORRECT nor a blanket UNVERIFIABLE is actually the right call here; the correct call is CORRECT-with-a-caveat, which the current schema has no slot for.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">§3</span><h2>The real gap — one bucket is doing the work of three</h2>
+      <span class="chip chip-gap">Design</span>
+    </div>
+    <p>Every sentence in a history essay falls into one of four relationships with a fact-checking KG, and only one of them is what UNVERIFIABLE was designed for:</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>What it is</th><th>Example from the runs</th><th>Current verdict</th><th>Is that fair?</th></tr>
+        <tr>
+          <td><span class="type-tag">A</span> — KG-checkable fact</td>
+          <td>A discrete, checkable proposition the KG already models.</td>
+          <td class="si">"...එළාර රජු පරාජය කර රට එක්සත් කළේය" → matches KG facts 5 &amp; 30</td>
+          <td>CORRECT</td>
+          <td>Yes — this is the system working as intended.</td>
+        </tr>
+        <tr>
+          <td><span class="type-tag">B</span> — real fact, KG gap</td>
+          <td>A checkable-in-principle historical detail the KG simply hasn't modeled yet.</td>
+          <td class="si">"ඇතුන් ලවා ගල් පෑගවීම" — elephants used to compact the foundation stones</td>
+          <td>UNVERIFIABLE</td>
+          <td>Correct call, but it's a <em>KG coverage</em> signal, not a student-accuracy signal.</td>
+        </tr>
+        <tr>
+          <td><span class="type-tag">C</span> — editorial / rhetorical</td>
+          <td>A value judgment, character study, or narrative flourish — not a factual proposition even in principle.</td>
+          <td class="si">"...හෙළ අනන්‍යතාවය සහ බෞද්ධ සංස්කෘතියේ මුරදේවතාවා වේ" — "guardian deity of Hela identity and Buddhist culture"</td>
+          <td>UNVERIFIABLE</td>
+          <td>No KG, however complete, could ever verify this. It shouldn't count against coverage at all.</td>
+        </tr>
+        <tr>
+          <td><span class="type-tag">D</span> — compound claim</td>
+          <td>A verifiable factual core bundled with an unverifiable qualifier (motive, technique, superlative).</td>
+          <td class="si">"...මිරිසවැටිය චෛත්‍යය සහ ලෝවාමහාපාය ඉදිකළේය" + unconfirmed motive clause</td>
+          <td>UNVERIFIABLE <em>(or the self-contradictory INCORRECT above)</em></td>
+          <td>No — the verifiable core (built X and Y) gets zero credit.</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Why this distorts the score</h3>
+    <p>The scoring formula is sound in its own terms:</p>
+    <pre>Factual Precision = correct / (correct + incorrect)
+KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
+    <p>But when Type&nbsp;B and Type&nbsp;C both land in the same <code>unverifiable_claims</code> bucket, <code>total_claims</code> grows for reasons that have nothing to do with the KG's completeness. An essay that states every fact correctly but is written in a reflective, evaluative register — introductions, character studies, and conclusions almost always are — will show a low <code>coverage_ratio</code>, trip <code>coverage_warning</code>, and can drag <code>confidence_level</code> to LOW, even though it made zero factual errors. In the excerpt shared, 13 of 14 visible claims were editorial-register sentences (Type&nbsp;C) rather than KG gaps (Type&nbsp;B) — under the current rules, all 13 count identically against coverage.</p>
+  </section>
+
+  <div class="divider"><span>Resolution</span></div>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">§4</span><h2>Design principle</h2></div>
+    <p>None of the above should be solved by making UNVERIFIABLE rarer, or by loosening what counts as CORRECT — that would compromise the actual research contribution (grounding claims strictly in KG evidence, never in Claude's own historical knowledge). The fix is to make the pipeline <em>say more</em> about each UNVERIFIABLE, and to let a compound claim be graded on its verifiable core instead of its weakest clause — not to change when something is allowed to be CORRECT.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">§5</span><h2>Proposed changes</h2></div>
+
+    <div class="rec">
+      <div class="rec-mark rec-do">1</div>
+      <div class="rec-body"><b>Fix §1 — surface ALSO_KNOWN_AS facts</b><span>Include alias/title edges in the prompt's fact list. No schema change, no scoring impact, pure evidence gap closed.</span></div>
+    </div>
+    <div class="rec">
+      <div class="rec-mark rec-do">2</div>
+      <div class="rec-body"><b>Add <code>claim_type</code>: FACTUAL vs EDITORIAL</b><span>Claude classifies each claim before grading it. EDITORIAL claims are still shown to the user (with a short note on why they're outside the KG's scope) but excluded from <code>total_claims</code>, so essay-writing style stops depressing coverage_ratio.</span></div>
+    </div>
+    <div class="rec">
+      <div class="rec-mark rec-do">3</div>
+      <div class="rec-body"><b>Add <code>unverifiable_reason</code>: NOT_IN_KG vs NOT_FACTUAL</b><span>For claims that stay UNVERIFIABLE, record why. NOT_IN_KG is a genuine KG-completeness signal worth acting on later; NOT_FACTUAL confirms the claim_type call. Cheap, and doubles as a worklist for what to add to the graph next.</span></div>
+    </div>
+    <div class="rec">
+      <div class="rec-mark rec-do">4</div>
+      <div class="rec-body"><b>Grade compound claims on their verifiable core</b><span>Instruct Claude: if a sentence's central assertion matches a KG fact, verdict is CORRECT even if a secondary clause (motive, technique, superlative) isn't covered — note the uncovered part in <code>explanation</code> rather than downgrading the verdict. Directly fixes §2's self-contradiction and recovers credit for the Mirisavetiya sentence.</span></div>
+    </div>
+    <div class="rec">
+      <div class="rec-mark rec-later">5</div>
+      <div class="rec-body"><b>Future work — full sub-claim decomposition</b><span>Splitting one sentence into several atomic claims (one per checkable proposition) would be the most precise fix for Type D, but needs prompt, schema, <em>and</em> UI changes to group sub-claims under their source sentence. Worth a "future work" line in the thesis; not required to resolve the cases seen so far — item&nbsp;4 already recovers the credit without the added complexity.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">§6</span><h2>Revised schema and prompt (draft)</h2></div>
+    <p>Extends the existing per-claim JSON object with two new fields; nothing existing is removed, so this is additive to the current output format.</p>
+    <pre>{
+  "claim_sinhala": "&lt;sentence or key claim from the essay&gt;",
+  "<span class="k">claim_type</span>": "FACTUAL" | "EDITORIAL",
+  "verdict": "CORRECT" | "INCORRECT" | "UNVERIFIABLE",
+  "<span class="k">unverifiable_reason</span>": "NOT_IN_KG" | "NOT_FACTUAL" | null,
+  "matched_kg_fact": "&lt;KG fact number and text, or 'N/A'&gt;",
+  "explanation": "&lt;brief explanation in English&gt;"
+}</pre>
+
+    <h3>New system-prompt rules</h3>
+    <pre><span class="c"># classification, applied before grading</span>
+- claim_type = EDITORIAL for value judgments, character assessments,
+  significance statements, or emotional/narrative description
+  (e.g. "the greatest ruler", "a golden milestone", "guardian deity
+  of Hela identity"). These ALWAYS get verdict=UNVERIFIABLE and
+  unverifiable_reason=NOT_FACTUAL. No KG could ever confirm or deny
+  these — do not attempt to.
+- claim_type = FACTUAL for anything describing an event, date,
+  relationship, construction, or alternate name/title — even if the
+  specific detail is not covered by the provided KG facts.
+
+<span class="c"># grading a FACTUAL claim</span>
+- If the claim's central assertion matches a KG fact, verdict =
+  CORRECT — even if a secondary clause (motive, method, superlative)
+  is not covered by the KG. Note the uncovered part in `explanation`;
+  do not let it pull the verdict down to UNVERIFIABLE or INCORRECT.
+- verdict = INCORRECT only if a KG fact is DIRECTLY contradicted
+  (wrong date, wrong relationship, wrong person). An unconfirmed
+  detail is never grounds for INCORRECT.
+- If a FACTUAL claim has no matching or contradicting KG fact at
+  all, verdict = UNVERIFIABLE, unverifiable_reason = NOT_IN_KG.</pre>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">§7</span><h2>Scoring formula — proposed update</h2></div>
+    <p>Same shape, narrower denominator. <code>total_claims</code> becomes <code>total_factual_claims</code> — EDITORIAL claims are dropped from the scoring math but not from the output; they still render in the UI, just outside the score.</p>
+    <pre>Factual Precision = correct / (correct + incorrect)                    <span class="c"># unchanged</span>
+KG Coverage Ratio  = (correct + incorrect) / total_<span class="k">factual</span>_claims        <span class="c"># denominator narrowed</span>
+Confidence         = HIGH if (correct + incorrect) &gt;= 5, else LOW      <span class="c"># unchanged</span>
+Editorial Claims   = count of claim_type == EDITORIAL                  <span class="c"># new, reported not scored</span>
+KG Gap Claims      = count of unverifiable_reason == NOT_IN_KG         <span class="c"># new, reported not scored</span></pre>
+    <p>The new <code>KG Gap Claims</code> count is a useful byproduct: it is effectively a worklist of real historical statements the current graph doesn't yet model, distinct from essay style.</p>
+  </section>
+
+  <div class="divider"><span>Decision</span></div>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">§8</span><h2>What needs a decision before implementation</h2>
+      <span class="chip chip-question">Open</span>
+    </div>
+    <p>Item&nbsp;1 in §5 is a pure bug fix with no methodology implications — safe to apply regardless. Items&nbsp;2–4 change what <code>coverage_ratio</code> and <code>confidence_level</code> mean, which is worth a deliberate call given they'll likely be referenced in the thesis methodology section:</p>
+    <ul>
+      <li>Apply the ALSO_KNOWN_AS fix now, on its own?</li>
+      <li>Adopt the <code>claim_type</code> / <code>unverifiable_reason</code> split (items 2–4), which changes the coverage_ratio denominator — or keep the current single-bucket UNVERIFIABLE for methodological consistency with any results already written up?</li>
+      <li>Is sub-claim decomposition (item 5) worth scoping now, or noted as future work?</li>
+    </ul>
+  </section>
+
+  <footer>Prepared from two live test runs (Dutugämuṇu essay batch log; Vijayabāhu&nbsp;II KG lookup) against the current <code>essay_accuracy_checker.py</code> / <code>kg_fact_retriever.py</code> implementation.</footer>
+
+</div>

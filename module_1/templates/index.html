@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight — Sinhala Essay Scorer</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        /* Header */
+        .header { text-align:center; margin-bottom:30px; }
+        .header h1 { font-size:2rem; color:#1a237e; }
+        .header h1 span { color:#1565c0; }
+        .header p { color:#546e7a; margin-top:6px; }
+        .badge {
+            display:inline-block; background:#e3f2fd;
+            color:#1565c0; padding:4px 14px;
+            border-radius:20px; font-size:0.8rem;
+            margin-top:8px; font-weight:600;
+        }
+
+        /* Card */
+        .card {
+            background:white; border-radius:16px;
+            padding:28px; box-shadow:0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom:22px;
+        }
+        .card h2 {
+            font-size:1.05rem; color:#1a237e;
+            margin-bottom:16px;
+        }
+
+        /* Tabs */
+        .tabs { display:flex; gap:10px; margin-bottom:16px; }
+        .tab {
+            padding:8px 20px; border-radius:8px;
+            border:2px solid #e0e0e0; background:white;
+            cursor:pointer; font-size:0.9rem;
+            font-weight:600; color:#546e7a;
+            transition:all 0.2s;
+        }
+        .tab.active {
+            background:#1565c0; border-color:#1565c0; color:white;
+        }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+
+        /* Textarea */
+        textarea {
+            width:100%; height:200px; padding:14px;
+            border:2px solid #e0e0e0; border-radius:10px;
+            font-size:1rem; font-family:inherit;
+            resize:vertical; outline:none;
+            transition:border 0.2s; line-height:1.7;
+        }
+        textarea:focus { border-color:#1565c0; }
+        .word-count {
+            text-align:right; font-size:0.8rem;
+            color:#90a4ae; margin-top:5px;
+        }
+
+        /* File upload */
+        .upload-area {
+            border:2px dashed #90caf9; border-radius:10px;
+            padding:40px; text-align:center;
+            background:#f8fbff; cursor:pointer;
+            transition:all 0.2s;
+        }
+        .upload-area:hover { border-color:#1565c0; background:#e3f2fd; }
+        .upload-area .icon { font-size:2.5rem; margin-bottom:8px; }
+        .upload-area p { color:#546e7a; font-size:0.9rem; }
+        .upload-area p span { color:#1565c0; font-weight:600; }
+        #file-input { display:none; }
+        #file-name {
+            margin-top:10px; font-size:0.85rem;
+            color:#1565c0; font-weight:600;
+        }
+
+        /* Button */
+        .btn-score {
+            width:100%; padding:14px;
+            background:linear-gradient(135deg,#1565c0,#1a237e);
+            color:white; border:none; border-radius:10px;
+            font-size:1rem; font-weight:600; cursor:pointer;
+            transition:all 0.2s; margin-top:16px;
+        }
+        .btn-score:hover {
+            transform:translateY(-1px);
+            box-shadow:0 4px 15px rgba(21,101,192,0.4);
+        }
+        .btn-score:disabled {
+            background:#b0bec5; cursor:not-allowed; transform:none;
+        }
+
+        /* Loading */
+        .loading {
+            display:none; text-align:center;
+            padding:30px; color:#546e7a;
+        }
+        .spinner {
+            width:40px; height:40px;
+            border:4px solid #e3f2fd;
+            border-top:4px solid #1565c0;
+            border-radius:50%;
+            animation:spin 0.8s linear infinite;
+            margin:0 auto 12px;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Error */
+        .error-box {
+            display:none; background:#ffebee;
+            border:1px solid #ef9a9a; border-radius:10px;
+            padding:12px 16px; color:#c62828;
+            margin-top:14px; font-size:0.9rem;
+        }
+
+        /* Results */
+        #results { display:none; }
+
+        .results-top {
+            display:flex; justify-content:space-between;
+            align-items:center; margin-bottom:18px;
+            flex-wrap:wrap; gap:10px;
+        }
+        .total-badge {
+            background:linear-gradient(135deg,#1565c0,#1a237e);
+            color:white; padding:10px 22px;
+            border-radius:30px; font-size:1.1rem; font-weight:700;
+        }
+        .meta-info { font-size:0.82rem; color:#78909c; margin-bottom:10px; }
+
+        /* Model badge */
+        .model-badge {
+            display:inline-block; background:#e8f5e9;
+            color:#2e7d32; padding:3px 12px;
+            border-radius:20px; font-size:0.75rem;
+            font-weight:600; margin-bottom:16px;
+        }
+
+        /* Feature chips */
+        .feature-chips {
+            display:flex; flex-wrap:wrap; gap:8px;
+            margin-bottom:20px;
+        }
+        .chip {
+            background:#f5f5f5; border:1px solid #e0e0e0;
+            border-radius:20px; padding:5px 12px;
+            font-size:0.8rem; color:#546e7a;
+        }
+        .chip span { font-weight:700; color:#1565c0; }
+
+        /* Score grid */
+        .score-grid {
+            display:grid; grid-template-columns:1fr 1fr;
+            gap:14px; margin-bottom:18px;
+        }
+        @media(max-width:600px) { .score-grid { grid-template-columns:1fr; } }
+
+        .score-card {
+            border-radius:12px; padding:16px;
+            border:2px solid #e0e0e0; transition:transform 0.2s;
+        }
+        .score-card:hover { transform:translateY(-2px); }
+        .score-card.good    { border-color:#a5d6a7; background:#f1f8e9; }
+        .score-card.average { border-color:#ffe082; background:#fffde7; }
+        .score-card.weak    { border-color:#ef9a9a; background:#ffebee; }
+        .score-card.weakest {
+            border-color:#e53935; background:#ffebee;
+            box-shadow:0 0 0 3px rgba(229,57,53,0.12);
+        }
+        .score-card.pending {
+            border-color:#b0bec5; background:#f5f5f5; opacity:0.7;
+        }
+
+        .card-top {
+            display:flex; justify-content:space-between;
+            align-items:flex-start; margin-bottom:10px;
+        }
+        .dim-name { font-weight:600; font-size:0.88rem; color:#37474f; }
+        .dim-score { font-size:1.3rem; font-weight:700; color:#1a237e; }
+        .dim-score.pending-score { color:#90a4ae; font-size:1rem; }
+
+        .progress-bar {
+            width:100%; height:8px; background:#e0e0e0;
+            border-radius:4px; overflow:hidden; margin-bottom:8px;
+        }
+        .progress-fill { height:100%; border-radius:4px; transition:width 1s ease; }
+        .fill-good    { background:#43a047; }
+        .fill-average { background:#f9a825; }
+        .fill-weak    { background:#e53935; }
+        .fill-pending { background:#b0bec5; }
+
+        .status-text { font-size:0.75rem; font-weight:600; margin-bottom:8px; }
+        .status-good    { color:#2e7d32; }
+        .status-average { color:#f57f17; }
+        .status-weak    { color:#c62828; }
+        .status-pending { color:#90a4ae; }
+
+        .hint-box {
+            background:rgba(255,255,255,0.7); border-radius:8px;
+            padding:8px 10px; font-size:0.78rem; color:#455a64;
+            line-height:1.5; margin-top:6px;
+            border-left:3px solid #90caf9;
+        }
+
+        /* Summary box */
+        .summary-box {
+            background:#e3f2fd; border-radius:10px;
+            padding:12px 16px; margin-bottom:16px;
+            font-size:0.88rem; color:#1a237e;
+            border-left:4px solid #1565c0;
+        }
+
+        /* Weakest alert */
+        .weakest-alert {
+            background:#fff3e0; border:2px solid #ffb74d;
+            border-radius:12px; padding:14px 18px;
+            display:flex; align-items:flex-start;
+            gap:10px; margin-bottom:16px;
+        }
+        .weakest-alert .icon { font-size:1.4rem; }
+        .weakest-alert h4 { color:#e65100; font-size:0.88rem; margin-bottom:3px; }
+        .weakest-alert p  { color:#bf360c; font-size:0.82rem; }
+
+        /* Module 3 export box */
+        .export-box {
+            background:#f8fbff; border:2px solid #90caf9;
+            border-radius:12px; padding:14px 18px;
+            margin-bottom:16px;
+        }
+        .export-box h4 {
+            color:#1565c0; font-size:0.88rem; margin-bottom:4px;
+        }
+        .export-box p {
+            color:#546e7a; font-size:0.8rem; margin-bottom:12px;
+        }
+        .export-links { display:flex; gap:10px; flex-wrap:wrap; }
+        .export-link {
+            display:inline-flex; align-items:center; gap:6px;
+            background:white; border:2px solid #1565c0;
+            color:#1565c0; text-decoration:none;
+            padding:8px 16px; border-radius:8px;
+            font-size:0.85rem; font-weight:600;
+            transition:all 0.2s;
+        }
+        .export-link:hover { background:#1565c0; color:white; }
+
+        /* Reset */
+        .btn-reset {
+            width:100%; padding:11px; background:white;
+            color:#1565c0; border:2px solid #1565c0;
+            border-radius:10px; font-size:0.95rem;
+            font-weight:600; cursor:pointer; transition:all 0.2s;
+        }
+        .btn-reset:hover { background:#e3f2fd; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>📝 <span>Insight</span></h1>
+        <p>Sinhala History Essay Recommendation System</p>
+        <span class="badge">Module 1 - Rubric Scoring</span>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card" id="input-card">
+        <h2>📄 ඔබගේ රචනය ඉදිරිපත් කරන්න</h2>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('type')">
+                ✏️ රචනය ලියන්න
+            </button>
+            <button class="tab" onclick="switchTab('upload')">
+                📂 ගොනු උඩුගත කරන්න
+            </button>
+        </div>
+
+        <!-- Type tab -->
+        <div class="tab-content active" id="tab-type">
+            <textarea
+                id="essay-textarea"
+                placeholder="ඔබගේ සිංහල ඉතිහාස රචනය මෙහි ලියන්න..."
+                oninput="updateWordCount()"
+            ></textarea>
+            <div class="word-count" id="word-count">වචන 0</div>
+        </div>
+
+        <!-- Upload tab -->
+        <div class="tab-content" id="tab-upload">
+            <div class="upload-area"
+                 onclick="document.getElementById('file-input').click()">
+                <div class="icon">📁</div>
+                <p><span>.txt</span> ගොනුවක් උඩුගත කරන්න</p>
+                <p style="font-size:0.78rem;margin-top:5px;">
+                    UTF-8 සිංහල පෙළ ගොනු සඳහා
+                </p>
+                <div id="file-name"></div>
+            </div>
+            <input type="file" id="file-input"
+                   accept=".txt" onchange="handleFile()"/>
+        </div>
+
+        <button class="btn-score" id="score-btn" onclick="scoreEssay()">
+            🎯 රචනය ඇගයීම කරන්න
+        </button>
+
+        <div class="error-box" id="error-box"></div>
+    </div>
+
+    <!-- Loading -->
+    <div class="card loading" id="loading">
+        <div class="spinner"></div>
+        <p>රචනය විශ්ලේෂණය කරමින්...</p>
+    </div>
+
+    <!-- Results -->
+    <div class="card" id="results">
+
+        <div class="results-top">
+            <h2>📊 රූබ්‍රික් ලකුණු</h2>
+            <span class="total-badge" id="total-score"></span>
+        </div>
+
+        <div class="meta-info"   id="meta-info"></div>
+        <div class="model-badge" id="model-badge"></div>
+        <div class="summary-box" id="summary-box"></div>
+        <div class="feature-chips" id="feature-chips"></div>
+        <div class="score-grid"    id="score-grid"></div>
+
+        <div class="weakest-alert" id="weakest-alert">
+            <span class="icon">⚠️</span>
+            <div>
+                <h4>වැඩිදියුණු කළ යුතු ප්‍රධාන ක්ෂේත්‍රය</h4>
+                <p id="weakest-text"></p>
+            </div>
+        </div>
+
+        <!-- Module 3 handoff files -->
+        <div class="export-box" id="export-box" style="display:none;">
+            <h4>📦 Module 3 සඳහා ගොනු</h4>
+            <p>මෙම රචනයේ ලකුණු සහ සටහන් වෙනම ගොනු දෙකකට සුරැකී ඇත. අවශ්‍ය පරිදි බාගත කර යවන්න.</p>
+            <div class="export-links" id="export-links"></div>
+        </div>
+
+        <button class="btn-reset" onclick="reset()">
+            ← වෙනත් රචනයක් ඇගයීම කරන්න
+        </button>
+    </div>
+
+</div>
+
+<script>
+    let fileContent = "";
+
+    // ── Dimension display config ──────────────────────────────────────────
+    const DIM_CONFIG = {
+        D1: { label: "D1 — ඓතිහාසික නිරවද්‍යතාව",     icon: "🏛️" },
+        D2: { label: "D2 — Coherence & Idea Flow",   icon: "🔗" },
+        D3: { label: "D3 — Vocabulary Richness",     icon: "📚" },
+        D4: { label: "D4 — Structural Adherence",    icon: "🏗️" },
+    };
+
+    // ── Tab switching ─────────────────────────────────────────────────────
+    function switchTab(tab) {
+        document.querySelectorAll(".tab")
+            .forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content")
+            .forEach(t => t.classList.remove("active"));
+        if (tab === "type") {
+            document.querySelectorAll(".tab")[0].classList.add("active");
+            document.getElementById("tab-type").classList.add("active");
+        } else {
+            document.querySelectorAll(".tab")[1].classList.add("active");
+            document.getElementById("tab-upload").classList.add("active");
+        }
+    }
+
+    function updateWordCount() {
+        const text = document.getElementById("essay-textarea").value.trim();
+        const n = text ? text.split(/\s+/).length : 0;
+        document.getElementById("word-count").textContent = `වචන ${n}`;
+    }
+
+    function handleFile() {
+        const file = document.getElementById("file-input").files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            fileContent = e.target.result;
+            document.getElementById("file-name").textContent = "✓ " + file.name;
+        };
+        reader.readAsText(file, "UTF-8");
+    }
+
+    // ── Score essay ───────────────────────────────────────────────────────
+    async function scoreEssay() {
+        hideError();
+
+        const isTypeTab = document.getElementById("tab-type")
+            .classList.contains("active");
+        const text = isTypeTab
+            ? document.getElementById("essay-textarea").value.trim()
+            : fileContent;
+
+        if (!text) {
+            showError("රචනයක් ඇතුළත් කරන්න හෝ ගොනුවක් උඩුගත කරන්න.");
+            return;
+        }
+        if (text.split(/\s+/).length < 10) {
+            showError("රචනය ඉතා කෙටිය. අවම වශයෙන් වචන 10ක් ලියන්න.");
+            return;
+        }
+
+        document.getElementById("score-btn").disabled = true;
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("input-card").style.opacity = "0.5";
+        document.getElementById("results").style.display = "none";
+
+        try {
+            const fd = new FormData();
+            fd.append("essay_text", text);
+
+            const res  = await fetch("/score", { method: "POST", body: fd });
+            const data = await res.json();
+
+            if (data.error) { showError(data.error); return; }
+            displayResults(data);
+
+        } catch(e) {
+            showError("දෝෂයක් ඇතිවිය. නැවත උත්සාහ කරන්න.");
+        } finally {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("score-btn").disabled = false;
+            document.getElementById("input-card").style.opacity = "1";
+        }
+    }
+
+    // ── Display results ───────────────────────────────────────────────────
+    function displayResults(data) {
+        const scores     = data.scores     || {};
+        const hints      = data.hints      || {};
+        const features   = data.features   || {};
+        const weakest    = data.weakest    || "D2";
+        const total      = data.total      || 0;
+        const word_count = data.word_count || 0;
+        const summary_si = data.summary_si || "";
+        const model_type = data.model_type || "rule_based";
+        const module3_export = data.module3_export || null;
+
+        // Total score
+        document.getElementById("total-score").textContent =
+            `එකතුව: ${total} / 20`;
+
+        // Meta info
+        document.getElementById("meta-info").textContent =
+            `වචන ගණන: ${word_count}`;
+
+        // Model badge
+        const modelLabel = model_type === "sinbert_finetuned"
+            ? "🤖 SinBERT Fine-tuned (QWK=0.897)"
+            : model_type === "rule_based_fallback"
+            ? "⚙️ Rule-based (fallback)"
+            : "⚙️ Rule-based scorer";
+        document.getElementById("model-badge").textContent = modelLabel;
+
+        // Summary
+        document.getElementById("summary-box").textContent =
+            summary_si || "";
+
+        // Feature chips — use safe fallbacks for every field
+        document.getElementById("feature-chips").innerHTML = `
+            <div class="chip">
+                සම්බන්ධකාරක: <span>${features.discourse_marker_count ?? "–"}</span>
+            </div>
+            <div class="chip">
+                TTR: <span>${features.ttr ?? "–"}</span>
+            </div>
+            <div class="chip">
+                වචන: <span>${word_count}</span>
+            </div>
+        `;
+
+        // Score grid — D1, D2, D3, D4
+        const grid = document.getElementById("score-grid");
+        grid.innerHTML = "";
+
+        const DIM_ORDER = ["D1", "D2", "D3", "D4"];
+
+        for (const dim of DIM_ORDER) {
+            const score   = scores[dim];
+            const cfg     = DIM_CONFIG[dim] || { label: dim, icon: "📌" };
+            const hint    = hints[dim] || "";
+            const isPending = score === null || score === undefined;
+            const isWeakest = dim === weakest && !isPending;
+
+            if (isPending) {
+                // D1 pending (other module)
+                grid.innerHTML += `
+                    <div class="score-card pending">
+                        <div class="card-top">
+                            <span class="dim-name">${cfg.icon} ${cfg.label}</span>
+                            <span class="dim-score pending-score">pending</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill fill-pending" style="width:0%"></div>
+                        </div>
+                        <div class="status-text status-pending">⏳ සහකරු මොඩියුලයෙන් ලැබේ</div>
+                        <div class="hint-box">D1 ලකුණ D1 Module එකෙන් ලැබෙනු ඇත.</div>
+                    </div>
+                `;
+                continue;
+            }
+
+            const cat  = score >= 4 ? "good"    : score >= 3 ? "average" : "weak";
+            const fill = score >= 4 ? "fill-good": score >= 3 ? "fill-average": "fill-weak";
+            const st   = score >= 4 ? "✓ ඉතා හොඳයි" : score >= 3 ? "⚠ සාමාන්‍ය" : "✗ වැඩිදියුණු කරන්න";
+            const pct  = (score / 5) * 100;
+
+            grid.innerHTML += `
+                <div class="score-card ${isWeakest ? "weakest" : cat}">
+                    <div class="card-top">
+                        <span class="dim-name">
+                            ${cfg.icon} ${cfg.label}
+                            ${isWeakest
+                                ? '<br><small style="color:#e53935">← මෙතැන අවධානය යොමු කරන්න</small>'
+                                : ""}
+                        </span>
+                        <span class="dim-score">${score}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${fill}" style="width:${pct}%"></div>
+                    </div>
+                    <div class="status-text status-${cat}">${st}</div>
+                    <div class="hint-box">${hint || "–"}</div>
+                </div>
+            `;
+        }
+
+        // Weakest alert
+        const weakestScore = scores[weakest];
+        const weakestLabel = (DIM_CONFIG[weakest] || {}).label || weakest;
+        const weakestHint  = hints[weakest] || "";
+        document.getElementById("weakest-text").textContent =
+            `${weakestLabel} (${weakestScore}/5) — ${weakestHint}`;
+
+        // Module 3 export download links
+        const exportBox = document.getElementById("export-box");
+        const exportLinks = document.getElementById("export-links");
+        if (module3_export && (module3_export.json_download_url || module3_export.txt_download_url)) {
+            exportLinks.innerHTML = "";
+            if (module3_export.json_download_url) {
+                exportLinks.innerHTML += `
+                    <a class="export-link" href="${module3_export.json_download_url}" download>
+                        ⬇️ JSON ගොනුව
+                    </a>`;
+            }
+            if (module3_export.txt_download_url) {
+                exportLinks.innerHTML += `
+                    <a class="export-link" href="${module3_export.txt_download_url}" download>
+                        ⬇️ සාරාංශය (.txt)
+                    </a>`;
+            }
+            exportBox.style.display = "block";
+        } else {
+            exportBox.style.display = "none";
+        }
+
+        document.getElementById("results").style.display = "block";
+        document.getElementById("results").scrollIntoView({ behavior:"smooth" });
+    }
+
+    // ── Reset ─────────────────────────────────────────────────────────────
+    function reset() {
+        document.getElementById("essay-textarea").value = "";
+        document.getElementById("word-count").textContent = "වචන 0";
+        document.getElementById("file-name").textContent = "";
+        document.getElementById("file-input").value = "";
+        fileContent = "";
+        document.getElementById("results").style.display = "none";
+        document.getElementById("export-box").style.display = "none";
+        document.getElementById("input-card").style.opacity = "1";
+        window.scrollTo({ top:0, behavior:"smooth" });
+    }
+
+    function showError(msg) {
+        const b = document.getElementById("error-box");
+        b.textContent = "⚠ " + msg;
+        b.style.display = "block";
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("score-btn").disabled = false;
+        document.getElementById("input-card").style.opacity = "1";
+    }
+
+    function hideError() {
+        document.getElementById("error-box").style.display = "none";
+    }
+</script>
+</body>
+</html>

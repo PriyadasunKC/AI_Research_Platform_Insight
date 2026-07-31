@@ -1,0 +1,34 @@
+INSIGHT — Module 1 → Module 3 handoff
+Essay ID   : essay-a7318882
+Generated  : 2026-07-30T02:33:48+00:00Z
+Word count : 727
+
+Scores:
+  Coherence & Idea Flow(D2): 4
+  Vocabulary Richness(D3): 5
+  Structural Adherence(D4): 3
+  D1: None
+  Average: 4.0
+
+Notes for Module 3:
+  [Coherence & Idea Flow(D2)]
+    what_wrong    : Only 4/5 connector types found. Missing: ['contrast']
+    how_to_improve: Add contrast: නමුත්, එහෙත්, එසේ වුවද
+    short_note_si : ඔබේ රචනාවේ අදහස් හොඳින් සම්බන්ධ කර ඇත. සම්බන්ධක ලෙස හොඳ ප්‍රගතියක් දැකිය හැකිය.
+  [Vocabulary Richness(D3)]
+    what_wrong    : Vocabulary is acceptable.
+    how_to_improve: Replace repeated words with synonyms
+    short_note_si : වචන සම්පතෙහි දුර්වලතා: අධිකව නැවත යෙදූ වචන: "දේවානම්පිය" (15×), "තිස්ස" (20×), "රජු" (11×).
+  [Structural Adherence(D4)]
+    what_wrong    : No thesis statement in intro | No conclusion
+    how_to_improve: Add thesis — state your main argument in the intro | End with: අවසාන වශයෙන්, මෙලෙස
+    short_note_si : රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: ප්‍රධාන තර්කය / thesis statement, නිගමනය (conclusion). දැනට ඇති ඡේද ගණන: 13. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ.
+
+වැඩිදියුණු කළ යුතු ප්‍රධාන ක්ෂේත්‍රය:
+  Dimension: Structural Adherence(D4)
+  Score    : 3
+  Hint     : රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: ප්‍රධාන තර්කය / thesis statement, නිගමනය (conclusion). දැනට ඇති ඡේද ගණන: 13. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ.
+
+Summary (SI): ඔබේ රචනාව ඉතා හොඳ මට්ටමකය. ඉහළ ලකුණු ලබා ගැනීමට දිගටම වැඩ කරන්න.
+
+Full essay text and RAG context are in the attached JSON file.

@@ -1,0 +1,34 @@
+INSIGHT — Module 1 → Module 3 handoff
+Essay ID   : essay-8a499763
+Generated  : 2026-07-30T05:22:56+00:00Z
+Word count : 520
+
+Scores:
+  Coherence & Idea Flow(D2): 5
+  Vocabulary Richness(D3): 5
+  Structural Adherence(D4): 3
+  D1: None
+  Average: 4.33
+
+Notes for Module 3:
+  [Coherence & Idea Flow(D2)]
+    what_wrong    : Only 3/5 connector types found. Missing: ['addition', 'example']
+    how_to_improve: Add addition: එසේම, ඊට අමතරව, තවද | Add examples: උදාහරණයක් ලෙස, එනම්
+    short_note_si : ඔබේ රචනාවේ අදහස් අතර සම්බන්ධය දුර්වලය. මෙම සම්බන්ධක වර්ග යොදා ගන්න: එකතු කිරීම ("එසේම", "ඊට අමතරව"), උදාහරණ ("උදාහරණයක් ලෙස", "එනම්").
+  [Vocabulary Richness(D3)]
+    what_wrong    : Vocabulary is acceptable.
+    how_to_improve: Replace repeated words with synonyms
+    short_note_si : වචන සම්පතෙහි දුර්වලතා: අධිකව නැවත යෙදූ වචන: "ලීලාවතී" (11×), "තෙවන" (7×), "පාලනය" (7×).
+  [Structural Adherence(D4)]
+    what_wrong    : No clear introduction | No thesis statement in intro | No conclusion
+    how_to_improve: Start with intro paragraph introducing the topic | Add thesis — state your main argument in the intro | End with: අවසාන වශයෙන්, මෙලෙස
+    short_note_si : රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: හැඳින්වීම (introduction), ප්‍රධාන තර්කය / thesis statement, නිගමනය (conclusion). දැනට ඇති ඡේද ගණන: 7. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ.
+
+වැඩිදියුණු කළ යුතු ප්‍රධාන ක්ෂේත්‍රය:
+  Dimension: Structural Adherence(D4)
+  Score    : 3
+  Hint     : රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: හැඳින්වීම (introduction), ප්‍රධාන තර්කය / thesis statement, නිගමනය (conclusion). දැනට ඇති ඡේද ගණන: 7. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ.
+
+Summary (SI): සාමාන්‍ය මට්ටමකය. රචනා ව්‍යූහය වැඩිදියුණු කරන්න.
+
+Full essay text and RAG context are in the attached JSON file.

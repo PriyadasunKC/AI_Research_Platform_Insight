@@ -1,0 +1,34 @@
+INSIGHT — Module 1 → Module 3 handoff
+Essay ID   : essay-caf0ad6c
+Generated  : 2026-07-30T02:15:22+00:00Z
+Word count : 83
+
+Scores:
+  Coherence & Idea Flow(D2): 4
+  Vocabulary Richness(D3): 4
+  Structural Adherence(D4): 2
+  D1: None
+  Average: 3.33
+
+Notes for Module 3:
+  [Coherence & Idea Flow(D2)]
+    what_wrong    : Only 4/5 connector types found. Missing: ['example']
+    how_to_improve: Add examples: උදාහරණයක් ලෙස, එනම්
+    short_note_si : ඔබේ රචනාවේ අදහස් හොඳින් සම්බන්ධ කර ඇත. සම්බන්ධක ලෙස හොඳ ප්‍රගතියක් දැකිය හැකිය.
+  [Vocabulary Richness(D3)]
+    what_wrong    : Vocabulary is acceptable.
+    how_to_improve: Maintain current vocabulary level.
+    short_note_si : ඔබේ වචන සම්පත හොඳ මට්ටමකය. ශාස්ත්‍රීය වචන ලෙස යෙදීම ඉහළ නංවන්න.
+  [Structural Adherence(D4)]
+    what_wrong    : Structure is acceptable.
+    how_to_improve: Maintain current structure.
+    short_note_si : ඔබේ රචනාවේ ව්‍යූහය හොඳය. හැඳින්වීම, ශරීරය සහ නිගමනය පැහැදිලිව දැකිය හැකිය.
+
+වැඩිදියුණු කළ යුතු ප්‍රධාන ක්ෂේත්‍රය:
+  Dimension: Structural Adherence(D4)
+  Score    : 2
+  Hint     : ඔබේ රචනාවේ ව්‍යූහය හොඳය. හැඳින්වීම, ශරීරය සහ නිගමනය පැහැදිලිව දැකිය හැකිය.
+
+Summary (SI): ඔබේ රචනාව ඉතා හොඳ මට්ටමකය. ඉහළ ලකුණු ලබා ගැනීමට දිගටම වැඩ කරන්න.
+
+Full essay text and RAG context are in the attached JSON file.

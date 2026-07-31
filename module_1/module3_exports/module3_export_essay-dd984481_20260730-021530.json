@@ -1,0 +1,74 @@
+{
+  "essay_text": "ශ්‍රී ලංකාවේ ඉතිහාසය පිළිබඳ මෙම රචනාව ඉදිරිපත් කරනු ලැබේ.\nබෞද්ධ ධර්මය ව්‍යාප්ත කිරීම ශ්‍රී ලංකා ඉතිහාසයේ ප්‍රධාන සිදුවීමක් බව සිතිය හැකිය.\n\nමහින්ද හිමිගේ ලංකා ගමනය ක්‍රි.පූ. 247 දී සිදු විය.\nඑබැවින් දේවානම්පියතිස්ස රජතුමා බෞද්ධ ධර්මය වැළඳ ගත්තේය.\nනමුත් රාජකීය සහාය නොමැතිව ඒ කළ නොහැකිව තිබිණ.\n\nඉන් පසු මහාවිහාරය ඉදිකෙරිණ.\nශ්‍රී ලංකාවේ සංස්කෘතික ශිෂ්ටාචාරය ගොඩ නැගිණ.\nඑසේම රාජකීය අනුග්‍රහය නිසා ධර්මය ශ්‍රී ලාංකීය සමාජය තුළ ශක්තිමත් විය.\n\nඅවසාන වශයෙන් මෙලෙස ශ්‍රී ලංකාවේ ඉතිහාසය ගොඩ නැගිණ.\nඉහත සාකච්ඡා කළ කරුණු රටේ සංස්කෘතික හෙළිදරව්ව සනාථ කරයි.",
+  "scores": {
+    "Coherence & Idea Flow(D2)": 4,
+    "Vocabulary Richness(D3)": 4,
+    "Structural Adherence(D4)": 2,
+    "D1": null
+  },
+  "notes": {
+    "Coherence & Idea Flow(D2)": {
+      "score": 4,
+      "what_wrong": "Only 4/5 connector types found. Missing: ['example']",
+      "found_markers": {
+        "cause_effect": [
+          "එබැවින්",
+          "නිසා"
+        ],
+        "contrast": [
+          "නමුත්"
+        ],
+        "addition": [
+          "එසේම"
+        ],
+        "sequence": [
+          "ඉන් පසු",
+          "අවසාන වශයෙන්"
+        ]
+      },
+      "missing_types": [
+        "example"
+      ],
+      "how_to_improve": "Add examples: උදාහරණයක් ලෙස, එනම්",
+      "short_note_si": "ඔබේ රචනාවේ අදහස් හොඳින් සම්බන්ධ කර ඇත. සම්බන්ධක ලෙස හොඳ ප්‍රගතියක් දැකිය හැකිය."
+    },
+    "Vocabulary Richness(D3)": {
+      "score": 4,
+      "what_wrong": "Vocabulary is acceptable.",
+      "repeated_words": {},
+      "academic_words": [
+        "ලංකාවේ",
+        "ඉතිහාසය",
+        "පිළිබඳ",
+        "ඉදිරිපත්",
+        "කරනු",
+        "ලැබේ",
+        "බෞද්ධ",
+        "ධර්මය",
+        "යාප්ත",
+        "කිරීම"
+      ],
+      "informal_words": [],
+      "how_to_improve": "Maintain current vocabulary level.",
+      "short_note_si": "ඔබේ වචන සම්පත හොඳ මට්ටමකය. ශාස්ත්‍රීය වචන ලෙස යෙදීම ඉහළ නංවන්න."
+    },
+    "Structural Adherence(D4)": {
+      "score": 2,
+      "what_wrong": "Structure is acceptable.",
+      "para_count": 4,
+      "missing": [],
+      "has_intro": true,
+      "has_thesis": true,
+      "has_body": true,
+      "has_conclusion": true,
+      "how_to_improve": "Maintain current structure.",
+      "short_note_si": "ඔබේ රචනාවේ ව්‍යූහය හොඳය. හැඳින්වීම, ශරීරය සහ නිගමනය පැහැදිලිව දැකිය හැකිය."
+    }
+  },
+  "weakest_area": {
+    "dimension": "Structural Adherence(D4)",
+    "score": 2,
+    "hint": "ඔබේ රචනාවේ ව්‍යූහය හොඳය. හැඳින්වීම, ශරීරය සහ නිගමනය පැහැදිලිව දැකිය හැකිය."
+  },
+  "rag_context": []
+}

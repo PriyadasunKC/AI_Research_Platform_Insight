@@ -1,0 +1,80 @@
+{
+  "info": {
+    "name": "Sinhala Historical Essay Accuracy API",
+    "description": "Test collection for api_server.py — submit a raw Sinhala essay (as JSON text or an uploaded .txt file) and get back a KG-grounded accuracy score, claim-by-claim verdicts, and teacher-style corrections.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8010" },
+    { "key": "api_key", "value": "PASTE_YOUR_KEY_HERE" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "health"]
+        }
+      }
+    },
+    {
+      "name": "Check Essay",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-API-Key", "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"essay_text\": \"දුටුගැමුණු රජු ලංකා ඉතිහාසයේ අති වීරෝදාර රජෙකි. ඔහු කාවන්තිස්ස රජුගේ පුත්‍රයා විය. දුටුගැමුණු රජු එළාර රජු පරාජය කර රට එක්සත් කළේය. ඔහු රුවන්වැලිසෑය ඉදිකළේය.\",\n  \"submitted_by\": \"postman-test\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/essay/check",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "essay", "check"]
+        }
+      }
+    },
+    {
+      "name": "Check Essay (File Upload)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [], "description": "Select a .txt file containing the Sinhala essay (UTF-8 encoded)." },
+            { "key": "submitted_by", "type": "text", "value": "postman-file-test" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/essay/check-file",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "essay", "check-file"]
+        }
+      }
+    },
+    {
+      "name": "Get Essay Result by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/essay/PASTE_REQUEST_ID_HERE",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "essay", "PASTE_REQUEST_ID_HERE"]
+        }
+      }
+    }
+  ]
+}

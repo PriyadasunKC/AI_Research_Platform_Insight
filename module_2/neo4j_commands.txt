@@ -1,0 +1,105 @@
+All relationships (basic)
+
+MATCH (a)-[r]->(b)
+RETURN a.name, type(r), b.name, r.period
+LIMIT 100
+
+
+All relationships with full detail
+
+
+MATCH (a)-[r]->(b)
+RETURN 
+  labels(a)[0] AS subject_type,
+  a.name AS subject,
+  type(r) AS relation,
+  b.name AS object,
+  labels(b)[0] AS object_type,
+  r.period AS period,
+  r.source_citation AS source
+ORDER BY type(r), a.name
+
+Count by relation type
+
+
+MATCH ()-[r]->()
+RETURN type(r) AS relation, count(r) AS count
+ORDER BY count DESC
+
+Everything about one king
+
+
+MATCH (n)-[r]-(m)
+WHERE n.name = "දුටුගැමුණු" OR "දුටුගැමුණු" IN n.aliases
+RETURN n.name, type(r), m.name, r.period
+
+What a king built
+
+
+MATCH (k)-[r:BUILT]->(m)
+RETURN k.name AS king, m.name AS built
+
+Who defeated whom
+
+
+MATCH (a)-[r:DEFEATED]->(b)
+RETURN a.name AS winner, b.name AS defeated, r.period
+
+All triples for a specific relation
+
+
+MATCH (a)-[r:RULED]->(b)
+RETURN a.name, b.name, r.period
+ORDER BY r.period
+
+Most connected nodes (top 10)
+
+
+MATCH (n)-[r]-()
+RETURN n.name, labels(n)[0] AS type, count(r) AS connections
+ORDER BY connections DESC
+LIMIT 10
+
+All nodes by type
+
+
+MATCH (n)
+RETURN labels(n)[0] AS node_type, count(n) AS count
+ORDER BY count DESC
+
+Find path between two entities
+
+
+MATCH path = shortestPath(
+  (a)-[*..5]-(b)
+)
+WHERE a.name = "දුටුගැමුණු" AND b.name = "රුවන්වැලිසෑය"
+RETURN path
+
+All triples with period (dated events only)
+
+
+MATCH (a)-[r]->(b)
+WHERE r.period <> ""
+RETURN a.name, type(r), b.name, r.period
+ORDER BY r.period
+
+Full KG summary
+
+WITH count(n) AS nodes
+MATCH ()-[r]->()
+RETURN nodes, count(r) AS relationships
+
+
+delete some kings data 
+
+MATCH (n:Entity {name: "ධාතුසේන රජු"})
+DETACH DELETE n
+
+confirm all delted 
+
+MATCH (n:Entity {name: "ධාතුසේන රජු"})
+RETURN n.name, n.aliases
+
+
+

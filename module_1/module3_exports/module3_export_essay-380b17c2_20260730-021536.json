@@ -1,0 +1,71 @@
+{
+  "essay_text": "ශ්‍රී ලංකාවේ ඉතිහාසය පිළිබඳ මෙම රචනාව ඉදිරිපත් කරනු ලැබේ.\n\nමහින්ද හිමි ලංකාවට පැමිණිය. නමුත් රජතුමා ඒ ගැන නොදැන සිටියේය.\nමහාවිහාරය ඉදිකෙරිණ.\n\nඅවසාන වශයෙන් ශ්‍රී ලංකාවේ ඉතිහාසය ගොඩ නැගිණ.",
+  "scores": {
+    "Coherence & Idea Flow(D2)": 3,
+    "Vocabulary Richness(D3)": 3,
+    "Structural Adherence(D4)": 2,
+    "D1": null
+  },
+  "notes": {
+    "Coherence & Idea Flow(D2)": {
+      "score": 3,
+      "what_wrong": "Only 2/5 connector types found. Missing: ['cause_effect', 'addition', 'example']",
+      "found_markers": {
+        "contrast": [
+          "නමුත්"
+        ],
+        "sequence": [
+          "අවසාන වශයෙන්"
+        ]
+      },
+      "missing_types": [
+        "cause_effect",
+        "addition",
+        "example"
+      ],
+      "how_to_improve": "Add cause-effect: එබැවින්, ඒ නිසා, ප්‍රතිඵලයක් ලෙස | Add addition: එසේම, ඊට අමතරව, තවද | Add examples: උදාහරණයක් ලෙස, එනම්",
+      "short_note_si": "ඔබේ රචනාවේ අදහස් අතර සම්බන්ධය දුර්වලය. මෙම සම්බන්ධක වර්ග යොදා ගන්න: හේතු-ප්‍රතිඵල සම්බන්ධතා (\"එබැවින්\", \"ඒ නිසා\"), එකතු කිරීම (\"එසේම\", \"ඊට අමතරව\"), උදාහරණ (\"උදාහරණයක් ලෙස\", \"එනම්\")."
+    },
+    "Vocabulary Richness(D3)": {
+      "score": 3,
+      "what_wrong": "Vocabulary is acceptable.",
+      "repeated_words": {},
+      "academic_words": [
+        "ලංකාවේ",
+        "ඉතිහාසය",
+        "පිළිබඳ",
+        "ඉදිරිපත්",
+        "කරනු",
+        "ලැබේ",
+        "මහින්ද",
+        "හිමි",
+        "ලංකාවට",
+        "නමුත්"
+      ],
+      "informal_words": [],
+      "how_to_improve": "Maintain current vocabulary level.",
+      "short_note_si": "ඔබේ වචන සම්පත හොඳ මට්ටමකය. ශාස්ත්‍රීය වචන ලෙස යෙදීම ඉහළ නංවන්න."
+    },
+    "Structural Adherence(D4)": {
+      "score": 2,
+      "what_wrong": "No thesis statement in intro | Only 3 paragraphs (need 4+)",
+      "para_count": 3,
+      "missing": [
+        "thesis statement",
+        "3+ body paragraphs"
+      ],
+      "has_intro": true,
+      "has_thesis": false,
+      "has_body": false,
+      "has_conclusion": true,
+      "how_to_improve": "Add thesis — state your main argument in the intro | Write 3 separate body paragraphs, each with one main point",
+      "short_note_si": "රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: ප්‍රධාන තර්කය / thesis statement, ප්‍රධාන කොටස් 3ක් (body paragraphs). දැනට ඇති ඡේද ගණන: 3. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ."
+    }
+  },
+  "weakest_area": {
+    "dimension": "Structural Adherence(D4)",
+    "score": 2,
+    "hint": "රචනා ව්‍යූහයේ පහත කොටස් හෝ දුර්වල හෝ නොමැත: ප්‍රධාන තර්කය / thesis statement, ප්‍රධාන කොටස් 3ක් (body paragraphs). දැනට ඇති ඡේද ගණන: 3. අවම වශයෙන් ඡේද 5ක් (හැඳින්වීම + ශරීරය 3 + නිගමනය) අවශ්‍ය වේ."
+  },
+  "rag_context": []
+}

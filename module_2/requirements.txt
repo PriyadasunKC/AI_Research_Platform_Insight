@@ -1,0 +1,39 @@
+# ── Core NLP ──────────────────────────────────────────────────────────────────
+transformers>=4.40.0        # XLM-RoBERTa NER model loading
+torch>=2.2.0                # PyTorch backend for HuggingFace
+torchvision>=0.17.0         # Required by transformers image processors
+sentencepiece>=0.1.99       # Tokenizer dependency for XLM-R
+
+# ── HTTP / API ─────────────────────────────────────────────────────────────────
+openai>=1.30.0              # OpenAI / DeepSeek / Gemini (OpenAI-compatible)
+anthropic>=0.25.0           # Anthropic Claude
+requests>=2.31.0            # HTTP utility
+httpx>=0.27.0               # Optional async alternative
+
+# ── Environment / Config ───────────────────────────────────────────────────────
+python-dotenv>=1.0.0        # Load .env file
+
+# ── Data handling ─────────────────────────────────────────────────────────────
+numpy>=1.26.0               # Tensor post-processing
+
+# ── Graph database ─────────────────────────────────────────────────────────────
+neo4j>=5.0.0                # Neo4j Python driver
+
+# ── Document database ──────────────────────────────────────────────────────────
+pymongo>=4.6.0              # MongoDB driver — pipeline run history
+
+# ── Graph processing & visualization ──────────────────────────────────────────
+networkx>=3.0               # Graph algorithms (largest connected component)
+pyvis>=0.3.2                # Interactive HTML graph rendering
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+streamlit>=1.36.0           # Web UI framework
+streamlit-option-menu>=0.3.12  # Sidebar navigation menu
+
+# ── External API (api_server.py) ────────────────────────────────────────────
+fastapi>=0.110.0            # REST API for other project modules (e.g. Module 3)
+uvicorn[standard]>=0.27.0   # ASGI server to run api_server.py
+python-multipart>=0.0.9     # Required by FastAPI for the .txt file-upload endpoint
+
+# ── Dev / Testing ─────────────────────────────────────────────────────────────
+pytest>=8.0.0               # Unit tests
