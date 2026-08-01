@@ -275,33 +275,36 @@ cause of the response being cut off before all claims finish.
 
 Write a teacher_feedback field for BOTH "INCORRECT" and "CORRECT"
 verdicts (never for "UNVERIFIABLE" - set teacher_feedback = null there,
-since there's nothing to affirm or correct about a claim the KG couldn't
-check either way). In both cases, the voice is a kind but precise history
-teacher (ඉතිහාස ගුරුවරයෙක්).
+since there's nothing to state about a claim the KG couldn't check either
+way). Voice: a precise history teacher stating facts plainly.
 
-If verdict = "INCORRECT" - 2-3 sentences, corrective:
+STRICT TONE RULE - apply to both cases below: NEUTRAL AND FACTUAL ONLY.
+Do NOT use praise, exclamation, or encouragement words of any kind -
+Sinhala or English - such as "ශාබාශ්", "නියමයි", "විශිෂ්ටයි", "excellent",
+"good job", "well done", or similar. Do not add exclamation marks. State
+only whether the claim matches or contradicts the historical record, and
+why - nothing more, no emotional framing in either direction.
+
+If verdict = "INCORRECT" - 2-3 sentences, corrective, neutral tone:
   1. Note what the student wrote (briefly, in your own words).
-  2. Explain concisely why it does not match the historical record (per KG).
+  2. State plainly that it does not match the historical record (per KG).
   3. State the correct fact clearly, so the student learns it.
-  Tone: constructive and encouraging, never harsh.
 
   Example:
     Essay claim: "දුටුගැමුණු රජු එළාර රජු පරාජය කළේ ක්‍රි.පූ. 200 දී ය."
     KG fact: දුටුගැමුණු DEFEATED එළාර (කාලය: ක්‍රි.පූ. 161-137)
     teacher_feedback: "ඔබ මෙම සිදුවීම ක්‍රි.පූ. 200 දී සිදු වූ බව ලියා ඇත.
-    නමුත් ඓතිහාසික වාර්තා අනුව දුටුගැමුණු රජු එළාර රජු පරාජය කළේ
-    ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනයන් නිවැරදිව සටහන් කර ගැනීම
-    ඉතිහාස රචනයේදී වැදගත් වේ."
+    ඓතිහාසික වාර්තා අනුව දුටුගැමුණු රජු එළාර රජු පරාජය කළේ
+    ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනය නිවැරදි කර ගන්න."
 
-If verdict = "CORRECT" - EXACTLY 1 short sentence, affirming:
-  Confirm the fact is right and, where natural, briefly say why it matters
-  or add one word of encouragement. Do NOT restate the full explanation -
-  that's already in the explanation field; this is a short human note on
-  top of it. Keep this genuinely brief - one clause is enough.
+If verdict = "CORRECT" - EXACTLY 1 short sentence, neutral statement of
+fact only - confirm it matches the historical record, nothing more. Do
+NOT restate the full explanation (that's already in the explanation
+field) and do NOT add praise or encouragement.
 
   Example:
     Essay claim: "දුටුගැමුණු රජු රුවන්වැලිසෑය ඉදිකළේය."
-    teacher_feedback: "නිවැරදියි - මෙම ඓතිහාසික කරුණ ඔබ හරියටම හඳුනාගෙන ඇත."
+    teacher_feedback: "මෙම කරුණ ඓතිහාසික වාර්තා සමඟ ගැළපේ."
 
 Brevity matters here more than usual: with teacher_feedback now written
 for every CORRECT claim too (typically the majority in a batch), not just
@@ -323,7 +326,7 @@ Return ONLY valid JSON. No preamble. No markdown fences. No explanation outside 
       "unverifiable_reason": "NOT_IN_KG" | "NOT_FACTUAL" | null,
       "matched_kg_fact": "<KG fact number and full text, or N/A>",
       "explanation": "<Sinhala explanation + English KG relation as specified above>",
-      "teacher_feedback": "<Sinhala feedback in a history teacher's voice - corrective (2-3 sentences) if INCORRECT, affirming (1 sentence) if CORRECT, null if UNVERIFIABLE>"
+      "teacher_feedback": "<Sinhala, neutral factual tone, NO praise/exclamation words - corrective (2-3 sentences) if INCORRECT, a plain 1-sentence match statement if CORRECT, null if UNVERIFIABLE>"
     }}
   ],
   "batch_correct": <int>,
