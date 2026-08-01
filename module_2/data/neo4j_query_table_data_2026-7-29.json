@@ -372,6 +372,15 @@
     "subject_type": "Entity",
     "subject": "දුටුගැමුණු",
     "relation": "ALSO_KNOWN_AS",
+    "object": "ගාමිණී අභය",
+    "object_type": "Entity",
+    "period": "ක්‍රි.පූ. 161-137",
+    "source": "[manual]"
+  },
+  {
+    "subject_type": "Entity",
+    "subject": "දුටුගැමුණු",
+    "relation": "ALSO_KNOWN_AS",
     "object": "දුටුගැමුණු",
     "object_type": "Entity",
     "period": "",
