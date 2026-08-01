@@ -68,7 +68,7 @@ def split_paragraphs(text: str) -> list:
 # Vocabulary metrics
 
 def compute_ttr(tokens: list) -> float:
-    """Type-Token Ratio. Affected by essay length — prefer MATTR."""
+    """Type-Token Ratio. Affected by essay length - prefer MATTR."""
     if not tokens:
         return 0.0
     return len(set(tokens)) / len(tokens)
@@ -78,7 +78,7 @@ def compute_mattr(tokens: list, window: int = MATTR_WINDOW) -> float:
     """
     Moving Average TTR.
     Slides a fixed window across the token list and averages the TTR
-    of each window — not affected by essay length.
+    of each window - not affected by essay length.
     Falls back to simple TTR for short essays.
     """
     if len(tokens) < window:
@@ -151,10 +151,10 @@ def extract_features(essay_text: str) -> dict:
     Returns
     -------
     dict with keys grouped into:
-      vocabulary   — ttr, mattr, repetition info, academic/informal words
-      coherence    — discourse marker types and counts
-      structure    — paragraph/sentence counts, intro/thesis/conclusion flags
-      raw          — paragraph list, sentence list (for scorer debugging)
+      vocabulary   - ttr, mattr, repetition info, academic/informal words
+      coherence    - discourse marker types and counts
+      structure    - paragraph/sentence counts, intro/thesis/conclusion flags
+      raw          - paragraph list, sentence list (for scorer debugging)
     """
     if not essay_text or not essay_text.strip():
         raise ValueError("Essay text is empty.")

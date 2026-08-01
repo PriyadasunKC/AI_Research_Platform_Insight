@@ -15,7 +15,7 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
-/** Module 1's /score — internally also calls Module 2 server-side, so this
+/** Module 1's /score - internally also calls Module 2 server-side, so this
  * one call already returns the combined D1-D4 result. See module_1/app.py. */
 export async function callModule1(input: EssayInput, essayId: string): Promise<Module1Result> {
   let response: Response;
@@ -64,7 +64,7 @@ export async function callModule2(input: EssayInput, submittedBy: string): Promi
   return response.json();
 }
 
-/** Module 1's /score-offline — for when Module 2 ISN'T running on this
+/** Module 1's /score-offline - for when Module 2 ISN'T running on this
  * machine. Instead of Module 1 calling Module 2 itself, you supply a
  * Module 2 result JSON you already have (e.g. downloaded from the
  * standalone Module 2 page earlier, while Module 2 WAS running). Module 1
@@ -93,7 +93,7 @@ export async function callModule1Offline(
 
 /** Fetches the final combined Module-3 payload Module 1 already built and
  * saved during its /score call (see module_1/app.py's
- * GET /api/v1/module3/<essay_id>) — reads it back rather than
+ * GET /api/v1/module3/<essay_id>) - reads it back rather than
  * reconstructing the D2/D3/D4 renaming logic in TypeScript, so this can
  * never drift from what Module 1 actually wrote to disk for Module 3. */
 export async function fetchCombinedPayload(apiUrl: string): Promise<CombinedModule3Payload> {

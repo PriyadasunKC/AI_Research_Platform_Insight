@@ -1,9 +1,9 @@
 """
-mongo_store.py — MongoDB storage for pipeline run history.
+mongo_store.py - MongoDB storage for pipeline run history.
 
 Stores each pipeline execution: input sentence, NER tags, raw LLM
 response, validated triples, and whether the run was saved to the KG.
-Connection is lazy — importing this module never raises even if MongoDB
+Connection is lazy - importing this module never raises even if MongoDB
 is not running.
 """
 
@@ -207,7 +207,7 @@ def get_run_stats() -> dict:
         return {"error": str(exc)}
 
 
-# Essay Accuracy Checker — write operations
+# Essay Accuracy Checker - write operations
 
 def _claim_to_dict(c: Any) -> dict:
     return {
@@ -229,7 +229,7 @@ def save_essay_check_run(
     caller: str | None = None,
     submitted_by: str | None = None,
 ) -> str | None:
-    """Persist one essay accuracy check — the raw essay text plus the full
+    """Persist one essay accuracy check - the raw essay text plus the full
     AccuracyResult: every claim, every batch's exact Claude input/output, and
     all computed scores. Lets a user reopen a past check later and see
     everything the Essay Checker page showed at the time, unchanged.
@@ -237,14 +237,14 @@ def save_essay_check_run(
     Args:
         essay_text:   The raw student essay text that was checked.
         result:       An essay_accuracy_checker.AccuracyResult instance.
-        source:       "streamlit_ui" (default) or "api" — which front door
+        source:       "streamlit_ui" (default) or "api" - which front door
                       this check came through.
         caller:       Which authenticated API client sent this (resolved
-                      from the API key in api_server.py) — None for the
+                      from the API key in api_server.py) - None for the
                       Streamlit UI, which has no separate caller identity.
         submitted_by: Optional free-text identifier the caller supplied
                       (e.g. a student ID or essay ID from Module 3) for
-                      their own traceability — not validated, just stored.
+                      their own traceability - not validated, just stored.
 
     Returns:
         Inserted document _id as a string, or None on error.
@@ -300,7 +300,7 @@ def save_essay_check_run(
         return None
 
 
-# Essay Accuracy Checker — read operations
+# Essay Accuracy Checker - read operations
 
 def get_recent_essay_runs(limit: int = 100) -> list[dict]:
     """Return the most recent essay-check runs, newest first.

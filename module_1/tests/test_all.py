@@ -446,7 +446,7 @@ class TestFlaskAPI(unittest.TestCase):
 
 if __name__ == '__main__':
     print("=" * 65)
-    print("  Insight Module 1 — Test Suite")
+    print("  Insight Module 1 - Test Suite")
     print("=" * 65)
     print()
 

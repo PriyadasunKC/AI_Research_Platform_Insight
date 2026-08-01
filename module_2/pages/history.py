@@ -1,4 +1,4 @@
-"""pages/history.py — Pipeline run history stored in MongoDB."""
+"""pages/history.py - Pipeline run history stored in MongoDB."""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ def _render_run_list(runs: list[dict]) -> str | None:
         if search and search.lower() not in text.lower():
             continue
         ts  = r.get("timestamp", "")[:19].replace("T", "  ")
-        kg  = "✅" if r.get("kg_saved") else "—"
+        kg  = "✅" if r.get("kg_saved") else "-"
         df_rows.append({
             "_id":       r["_id"],
             "Timestamp": ts,
@@ -140,7 +140,7 @@ def _render_run_list(runs: list[dict]) -> str | None:
         "Select a run to inspect",
         options=ids,
         format_func=lambda rid: next(
-            (r["Timestamp"] + "  —  " + r["Sentence"]
+            (r["Timestamp"] + "  -  " + r["Sentence"]
              for r in df_rows if r["_id"] == rid), rid
         ),
         key="hist_selected",
@@ -275,7 +275,7 @@ def render() -> None:
     st.markdown("""
     <div class="kg-page-title">🗂️ Run History</div>
     <div class="kg-page-subtitle">
-      All pipeline executions saved to MongoDB — input sentences, NER tags,
+      All pipeline executions saved to MongoDB - input sentences, NER tags,
       LLM responses, and extracted triples.
     </div>
     """, unsafe_allow_html=True)

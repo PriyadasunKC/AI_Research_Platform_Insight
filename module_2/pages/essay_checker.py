@@ -1,8 +1,8 @@
-"""pages/essay_checker.py — Essay Accuracy Checker page (Stage 2, Module 2, 214161L).
+"""pages/essay_checker.py - Essay Accuracy Checker page (Stage 2, Module 2, 214161L).
 
 UI language convention: every label, guide, button, and status message is
-English. Only content that is inherently Sinhala — the student's essay text,
-quoted claims, king names, and KG facts — is rendered in Sinhala.
+English. Only content that is inherently Sinhala - the student's essay text,
+quoted claims, king names, and KG facts - is rendered in Sinhala.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import streamlit as st
 _CARD_OPEN  = '<div class="kg-card">'
 _CARD_CLOSE = '</div>'
 
-# Display category — distinct from the raw `verdict` field. EDITORIAL claims
+# Display category - distinct from the raw `verdict` field. EDITORIAL claims
 # are always verdict=UNVERIFIABLE, but need their own visual bucket so they
 # read as "not scored" rather than "a KG coverage gap" (see the analysis
 # report §3-§5: conflating the two was the original problem).
@@ -38,7 +38,7 @@ _CATEGORY_STYLE: dict[str, dict[str, str]] = {
     },
     "EDITORIAL": {
         "bg": "rgba(255,255,255,0.02)", "border": "rgba(255,183,77,0.28)",
-        "fg": "#ffb74d", "label": "EDITORIAL — NOT SCORED",
+        "fg": "#ffb74d", "label": "EDITORIAL - NOT SCORED",
     },
     "ERROR": {
         "bg": "rgba(255,255,255,0.02)", "border": "rgba(158,158,158,0.35)",
@@ -52,7 +52,7 @@ _CATEGORY_ORDER: tuple[str, ...] = ("CORRECT", "INCORRECT", "NOT_IN_KG", "EDITOR
 def _display_category(claim) -> str:
     """Map a claim's (claim_type, verdict, unverifiable_reason) onto one of
     the 5 display buckets. ERROR (unverifiable_reason is None) is distinct
-    from NOT_IN_KG (unverifiable_reason == "NOT_IN_KG") — a claim the model
+    from NOT_IN_KG (unverifiable_reason == "NOT_IN_KG") - a claim the model
     genuinely couldn't find in the KG is a different thing from a claim
     that never got graded because a batch's API/response failed."""
     if getattr(claim, "claim_type", "FACTUAL") == "EDITORIAL":
@@ -120,7 +120,7 @@ def _claim_card_html(claim) -> str:
         )
     if claim.explanation:
         # explanation is a Sinhala-templated sentence with an embedded English
-        # KG relation name (e.g. "KG fact 5 සමඟ ගැළපේ — X BUILT Y") — needs
+        # KG relation name (e.g. "KG fact 5 සමඟ ගැළපේ - X BUILT Y") - needs
         # the Sinhala font, not the Latin-only 'Inter' used elsewhere for
         # pure-English UI chrome.
         body += (
@@ -177,7 +177,7 @@ def _render_input_tab() -> None:
     essay_text = text_input.strip()
     if uploaded is not None:
         essay_text = uploaded.read().decode("utf-8").strip()
-        st.info(f"Extracted from file — {len(essay_text)} characters. (Text box will be ignored.)")
+        st.info(f"Extracted from file - {len(essay_text)} characters. (Text box will be ignored.)")
 
     api_key = _get_api_key()
     if not api_key:
@@ -198,11 +198,11 @@ def _render_batch_log_html(log) -> str:
     """Render one batch's full input/output trace as HTML.
 
     Used both live (during processing, via batch_callback) and persisted
-    (in the Results tab, from result.batch_logs) — same rendering either way
+    (in the Results tab, from result.batch_logs) - same rendering either way
     so what the user watches happen matches what they can review afterward.
     """
     retried_note = (
-        ' <span style="color:#ffb74d">(JSON parse failed — retried once)</span>'
+        ' <span style="color:#ffb74d">(JSON parse failed - retried once)</span>'
         if getattr(log, "parse_retried", False) else ""
     )
     sentences_html = "".join(
@@ -254,7 +254,7 @@ def _run_check(essay_text: str, api_key: str) -> None:
     def _on_batch(log) -> None:
         with live_log_area:
             with st.expander(
-                f"Batch {log.batch_number}/{log.total_batches} — Input to Output",
+                f"Batch {log.batch_number}/{log.total_batches} - Input to Output",
                 expanded=True,
             ):
                 st.markdown(_render_batch_log_html(log), unsafe_allow_html=True)
@@ -267,12 +267,12 @@ def _run_check(essay_text: str, api_key: str) -> None:
         )
         st.session_state["essay_result"] = result
         st.session_state["essay_checked_text"] = essay_text
-        status.success("Complete! — View the full result in the 'Results' tab.")
+        status.success("Complete! - View the full result in the 'Results' tab.")
     except Exception as exc:
         status.error(f"An error occurred: {exc}")
         return
 
-    # Persist to MongoDB (non-blocking — failure is logged, not surfaced).
+    # Persist to MongoDB (non-blocking - failure is logged, not surfaced).
     try:
         import mongo_store
         run_id = mongo_store.save_essay_check_run(essay_text, result)
@@ -317,7 +317,7 @@ def _render_summary_card(result) -> None:
             unsafe_allow_html=True,
         )
 
-    # "Not in KG" is a strict subset of all FACTUAL+UNVERIFIABLE claims —
+    # "Not in KG" is a strict subset of all FACTUAL+UNVERIFIABLE claims -
     # it excludes ones where a Claude API/response error prevented grading
     # (unverifiable_reason left None; see call_claude_batch). Those still
     # count in Total Claims and in KG Coverage, so surface them explicitly
@@ -328,7 +328,7 @@ def _render_summary_card(result) -> None:
         st.caption(
             f"{unresolved} claim{plural} could not be graded due to a Claude API/response "
             f"error (e.g. a truncated response) and are counted in Total Claims and KG "
-            f"Coverage, but not in 'Not in KG' or 'Editorial' above — see the Claude API "
+            f"Coverage, but not in 'Not in KG' or 'Editorial' above - see the Claude API "
             f"Log below for details."
         )
 
@@ -340,14 +340,14 @@ def _render_summary_card(result) -> None:
 
     if result.coverage_warning:
         st.warning(
-            "Low KG Coverage — Less than 30% of the essay's factual claims could be "
+            "Low KG Coverage - Less than 30% of the essay's factual claims could be "
             "verified using information in the Knowledge Graph. This score may not "
             "fully represent the essay's overall accuracy. (Editorial/interpretive "
-            "claims are excluded from this figure — see the Editorial count above.)"
+            "claims are excluded from this figure - see the Editorial count above.)"
         )
     if result.confidence_level == "INSUFFICIENT_KG":
         st.warning(
-            "No verifiable factual claims were found for this king — the score "
+            "No verifiable factual claims were found for this king - the score "
             "result may not be reliable."
         )
 
@@ -406,7 +406,7 @@ def _render_summary_table(result, selected_categories: list[str]) -> None:
 
 def _render_kg_gap_worklist(result) -> None:
     """Claims that are FACTUAL and UNVERIFIABLE specifically because the KG
-    doesn't cover them yet — a worklist of real historical statements worth
+    doesn't cover them yet - a worklist of real historical statements worth
     adding to the graph, distinct from editorial/interpretive claims."""
     st.markdown('<div class="kg-section-title">KG Gap Worklist</div>', unsafe_allow_html=True)
     st.markdown(_CARD_OPEN, unsafe_allow_html=True)
@@ -439,7 +439,7 @@ def _render_kg_gap_worklist(result) -> None:
 
 
 def _render_corrections_section(result) -> None:
-    """Every INCORRECT claim, paired with its teacher_feedback correction —
+    """Every INCORRECT claim, paired with its teacher_feedback correction -
     a focused, easy-to-read list of exactly what the essay got wrong and
     what the correct historical fact is, so the student can learn from it."""
     st.markdown('<div class="kg-section-title">Corrections & Feedback</div>', unsafe_allow_html=True)
@@ -449,7 +449,7 @@ def _render_corrections_section(result) -> None:
     if not wrong_claims:
         st.markdown(
             '<span style="color:rgba(255,255,255,.55)">No factual errors were found in this '
-            'essay — well done.</span>',
+            'essay - well done.</span>',
             unsafe_allow_html=True,
         )
         st.markdown(_CARD_CLOSE, unsafe_allow_html=True)
@@ -510,10 +510,10 @@ def _render_raw_facts_section(result) -> None:
 
 
 def _render_batch_logs_section(result) -> None:
-    """Persisted, step-by-step Claude I/O — one expander per batch, in order,
+    """Persisted, step-by-step Claude I/O - one expander per batch, in order,
     exactly as sent/received. Lets the user re-inspect after the fact what
     was shown live while processing."""
-    st.markdown('<div class="kg-section-title">Claude API Log — Batch Details</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kg-section-title">Claude API Log - Batch Details</div>', unsafe_allow_html=True)
 
     if not result.batch_logs:
         st.info("No batch log data.")
@@ -521,7 +521,7 @@ def _render_batch_logs_section(result) -> None:
 
     for log in result.batch_logs:
         with st.expander(
-            f"Batch {log.batch_number}/{log.total_batches} — "
+            f"Batch {log.batch_number}/{log.total_batches} - "
             f"{len(log.sentences)} sentences -> {len(log.claim_results)} claims",
             expanded=False,
         ):
@@ -531,7 +531,7 @@ def _render_batch_logs_section(result) -> None:
 def _render_complete_response_section(result) -> None:
     """The full picture once every batch is done: system prompt used, every
     batch's raw Claude response concatenated in order, and the final
-    aggregated claims JSON — the "complete response" across the whole essay."""
+    aggregated claims JSON - the "complete response" across the whole essay."""
     with st.expander("Complete Response (all batches combined)", expanded=False):
         if not result.batch_logs:
             st.markdown("(No data)")
@@ -602,7 +602,7 @@ def _render_essay_text_section(essay_text: str) -> None:
 
 
 def _render_full_result(essay_text: str, result, key_suffix: str) -> None:
-    """Raw essay followed by the complete result — shared by the live
+    """Raw essay followed by the complete result - shared by the live
     Results tab and the History tab so a past check looks exactly like it
     did when it was first run."""
     _render_essay_text_section(essay_text)
@@ -640,7 +640,7 @@ def _render_results_tab() -> None:
     _render_full_result(essay_text, result, key_suffix="live")
 
 
-# History tab — reload past essay checks from MongoDB
+# History tab - reload past essay checks from MongoDB
 
 def _rebuild_result_from_doc(doc: dict):
     """Reconstruct an AccuracyResult (with ClaimResult/BatchLog objects) from

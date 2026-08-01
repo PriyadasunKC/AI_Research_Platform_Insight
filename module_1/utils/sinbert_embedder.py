@@ -20,7 +20,7 @@ class SinBERTEmbedder:
     def __init__(self):
         print("\n Loading SinBERT model...")
         print(f" Model: {self.MODEL_NAME}")
-        print(" (First run will download ~300MB — please wait)\n")
+        print(" (First run will download ~300MB - please wait)\n")
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.MODEL_NAME

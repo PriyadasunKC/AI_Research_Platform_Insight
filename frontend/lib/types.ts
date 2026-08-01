@@ -1,7 +1,7 @@
 // Types for the shapes returned by Module 1 (Flask, port 5000) and
 // Module 2 (FastAPI, port 8010). Kept intentionally loose (optional
 // fields, index signatures for note blocks) since both are actively
-// developed Python backends — this describes the fields the UI actually
+// developed Python backends - this describes the fields the UI actually
 // reads, not a strict contract.
 
 export type DimensionNote = {
@@ -77,7 +77,7 @@ export type Module2Result = {
 };
 
 // The exact shape written to module_1/module3_exports/*.json and served
-// by GET /api/v1/module3/<essay_id> — this is the final combined payload
+// by GET /api/v1/module3/<essay_id> - this is the final combined payload
 // that gets handed off to Module 3.
 export type CombinedModule3Payload = {
   essay_text: string;

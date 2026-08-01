@@ -158,7 +158,7 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
 <div class="page">
 
   <div class="doc-head">
-    <div class="doc-kicker">Internal technical memo — Stage 2</div>
+    <div class="doc-kicker">Internal technical memo - Stage 2</div>
     <h1 class="doc-title">Claim Classification in KG-Grounded Essay Fact-Checking</h1>
     <p class="doc-sub">Findings from live essay runs against the Dutugämuṇu and Vijayabāhu&nbsp;II test cases, and a proposed path to fix them without discarding the current scoring formula.</p>
     <div class="doc-meta">
@@ -171,11 +171,11 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
 
   <section>
     <div class="sec-head"><span class="sec-num">§0</span><h2>Executive summary</h2></div>
-    <p>Two essay runs surfaced three distinct problems, only one of which is a straightforward code bug. The other two are a genuine methodological gap in how the pipeline turns essay sentences into a CORRECT / INCORRECT / UNVERIFIABLE verdict — and that gap directly shapes what <code>accuracy_score</code> and <code>coverage_ratio</code> mean in the thesis write-up, so it should be a deliberate decision rather than a silent patch.</p>
+    <p>Two essay runs surfaced three distinct problems, only one of which is a straightforward code bug. The other two are a genuine methodological gap in how the pipeline turns essay sentences into a CORRECT / INCORRECT / UNVERIFIABLE verdict - and that gap directly shapes what <code>accuracy_score</code> and <code>coverage_ratio</code> mean in the thesis write-up, so it should be a deliberate decision rather than a silent patch.</p>
     <ul>
-      <li><strong>A fixable bug</strong> — <code>ALSO_KNOWN_AS</code> facts are withheld from the prompt entirely, so a genuinely KG-verifiable claim (an alternate royal title) was marked UNVERIFIABLE for no reason other than Claude never being shown the evidence.</li>
-      <li><strong>A model-reliability symptom</strong> — one claim was returned with a verdict of <code>INCORRECT</code> whose own explanation text argues for, and ends by declaring, <code>UNVERIFIABLE</code>. The structured field and the free-text reasoning disagree.</li>
-      <li><strong>A design gap</strong> — the pipeline currently has no way to tell "this is a real historical fact the KG hasn't modeled yet" apart from "this sentence isn't a factual claim at all" (opinion, character study, rhetorical flourish). Both collapse into the same UNVERIFIABLE bucket, which depresses <code>coverage_ratio</code> for well-written essays for reasons that have nothing to do with historical accuracy.</li>
+      <li><strong>A fixable bug</strong> - <code>ALSO_KNOWN_AS</code> facts are withheld from the prompt entirely, so a genuinely KG-verifiable claim (an alternate royal title) was marked UNVERIFIABLE for no reason other than Claude never being shown the evidence.</li>
+      <li><strong>A model-reliability symptom</strong> - one claim was returned with a verdict of <code>INCORRECT</code> whose own explanation text argues for, and ends by declaring, <code>UNVERIFIABLE</code>. The structured field and the free-text reasoning disagree.</li>
+      <li><strong>A design gap</strong> - the pipeline currently has no way to tell "this is a real historical fact the KG hasn't modeled yet" apart from "this sentence isn't a factual claim at all" (opinion, character study, rhetorical flourish). Both collapse into the same UNVERIFIABLE bucket, which depresses <code>coverage_ratio</code> for well-written essays for reasons that have nothing to do with historical accuracy.</li>
     </ul>
     <p>§5 lays out the fix for all three as one coherent change, with a revised prompt and schema in §6, and the specific decisions that need your sign-off in §7.</p>
   </section>
@@ -184,20 +184,20 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
 
   <section>
     <div class="sec-head">
-      <span class="sec-num">§1</span><h2>Confirmed bug — alias facts are invisible to Claude</h2>
+      <span class="sec-num">§1</span><h2>Confirmed bug - alias facts are invisible to Claude</h2>
       <span class="chip chip-bug">Bug</span>
     </div>
-    <p><code>kg_fact_retriever.get_facts_for_king()</code> deliberately strips every <code>ALSO_KNOWN_AS</code> triple before building the fact list sent to Claude, on the original reasoning that "those are used for name resolution only." That reasoning missed a second, legitimate use: essays often state a person's alternate name or title as a fact in its own right — and the KG already records exactly that.</p>
+    <p><code>kg_fact_retriever.get_facts_for_king()</code> deliberately strips every <code>ALSO_KNOWN_AS</code> triple before building the fact list sent to Claude, on the original reasoning that "those are used for name resolution only." That reasoning missed a second, legitimate use: essays often state a person's alternate name or title as a fact in its own right - and the KG already records exactly that.</p>
 
     <div class="card card-flag">
-      <div class="card-label">Evidence — verified directly against the KG export</div>
-      <p class="kv"><b>KG edge:</b> <span class="si">II වන විජයබාහු රජු —ALSO_KNOWN_AS→ පණ්ඩිත විජයබාහු</span> (one of 4 <code>ALSO_KNOWN_AS</code> edges for this king)</p>
-      <p class="kv"><b>Essay claim:</b> <span class="si">"...පණ්ඩිත විජයබාහු යන විරුදාවලියෙන් පිදුම් ලැබූ මෙතුමා..."</span> — "he who was honored with the title Pandita Vijayabahu"</p>
-      <p class="kv"><b>Facts Claude actually received:</b> 7 KG facts for this king — <b>zero</b> of them <code>ALSO_KNOWN_AS</code></p>
-      <p class="kv"><b>Result:</b> marked <code>UNVERIFIABLE</code> — not a reasoning failure, an evidence-withholding failure</p>
+      <div class="card-label">Evidence - verified directly against the KG export</div>
+      <p class="kv"><b>KG edge:</b> <span class="si">II වන විජයබාහු රජු -ALSO_KNOWN_AS→ පණ්ඩිත විජයබාහු</span> (one of 4 <code>ALSO_KNOWN_AS</code> edges for this king)</p>
+      <p class="kv"><b>Essay claim:</b> <span class="si">"...පණ්ඩිත විජයබාහු යන විරුදාවලියෙන් පිදුම් ලැබූ මෙතුමා..."</span> - "he who was honored with the title Pandita Vijayabahu"</p>
+      <p class="kv"><b>Facts Claude actually received:</b> 7 KG facts for this king - <b>zero</b> of them <code>ALSO_KNOWN_AS</code></p>
+      <p class="kv"><b>Result:</b> marked <code>UNVERIFIABLE</code> - not a reasoning failure, an evidence-withholding failure</p>
     </div>
 
-    <p><strong>Fix:</strong> include <code>ALSO_KNOWN_AS</code> triples in <code>format_facts_for_prompt()</code>'s output (labelled as what they are, e.g. <span class="si">"X — ALSO_KNOWN_AS — Y"</span>), while leaving their separate role in <code>get_all_kg_names_for_king()</code> — resolving which names belong to which king — untouched. Same edge type, two different consumers; only one of them should ever have excluded it.</p>
+    <p><strong>Fix:</strong> include <code>ALSO_KNOWN_AS</code> triples in <code>format_facts_for_prompt()</code>'s output (labelled as what they are, e.g. <span class="si">"X - ALSO_KNOWN_AS - Y"</span>), while leaving their separate role in <code>get_all_kg_names_for_king()</code> - resolving which names belong to which king - untouched. Same edge type, two different consumers; only one of them should ever have excluded it.</p>
   </section>
 
   <section>
@@ -205,7 +205,7 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
       <span class="sec-num">§2</span><h2>Verdict / explanation disagreement</h2>
       <span class="chip chip-bug">Reliability</span>
     </div>
-    <p>One claim's rendered badge read <code>INCORRECT</code>, while its own explanation text reasons through the evidence and explicitly concludes with the words <em>"Marking UNVERIFIABLE due to the motivational claim being unverifiable from KG."</em> The UI renders whatever string sits in the <code>verdict</code> JSON field verbatim — this is not a display bug, Claude's structured output and its own free-text reasoning genuinely disagreed on the same call.</p>
+    <p>One claim's rendered badge read <code>INCORRECT</code>, while its own explanation text reasons through the evidence and explicitly concludes with the words <em>"Marking UNVERIFIABLE due to the motivational claim being unverifiable from KG."</em> The UI renders whatever string sits in the <code>verdict</code> JSON field verbatim - this is not a display bug, Claude's structured output and its own free-text reasoning genuinely disagreed on the same call.</p>
 
     <div class="card card-flag">
       <div class="card-label">The claim in question</div>
@@ -214,12 +214,12 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
       <p class="kv"><b>Claude's own closing line:</b> "...this is a mixed case. Marking UNVERIFIABLE due to the motivational claim being unverifiable from KG."</p>
     </div>
 
-    <p>This is not an isolated glitch — it is a symptom of §3 below. The sentence bundles a KG-confirmed fact (built Mirisavetiya and Lōhaprāsāda / Lōvamahāpāya — KG facts&nbsp;2&amp;3) with an unconfirmable motive clause ("to relieve wartime mental distress"). Forced into exactly one of three buckets, the model wavers — and per its own stated rule ("INCORRECT only if it directly contradicts a KG fact"), <em>neither</em> INCORRECT nor a blanket UNVERIFIABLE is actually the right call here; the correct call is CORRECT-with-a-caveat, which the current schema has no slot for.</p>
+    <p>This is not an isolated glitch - it is a symptom of §3 below. The sentence bundles a KG-confirmed fact (built Mirisavetiya and Lōhaprāsāda / Lōvamahāpāya - KG facts&nbsp;2&amp;3) with an unconfirmable motive clause ("to relieve wartime mental distress"). Forced into exactly one of three buckets, the model wavers - and per its own stated rule ("INCORRECT only if it directly contradicts a KG fact"), <em>neither</em> INCORRECT nor a blanket UNVERIFIABLE is actually the right call here; the correct call is CORRECT-with-a-caveat, which the current schema has no slot for.</p>
   </section>
 
   <section>
     <div class="sec-head">
-      <span class="sec-num">§3</span><h2>The real gap — one bucket is doing the work of three</h2>
+      <span class="sec-num">§3</span><h2>The real gap - one bucket is doing the work of three</h2>
       <span class="chip chip-gap">Design</span>
     </div>
     <p>Every sentence in a history essay falls into one of four relationships with a fact-checking KG, and only one of them is what UNVERIFIABLE was designed for:</p>
@@ -228,32 +228,32 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
       <table>
         <tr><th>Type</th><th>What it is</th><th>Example from the runs</th><th>Current verdict</th><th>Is that fair?</th></tr>
         <tr>
-          <td><span class="type-tag">A</span> — KG-checkable fact</td>
+          <td><span class="type-tag">A</span> - KG-checkable fact</td>
           <td>A discrete, checkable proposition the KG already models.</td>
           <td class="si">"...එළාර රජු පරාජය කර රට එක්සත් කළේය" → matches KG facts 5 &amp; 30</td>
           <td>CORRECT</td>
-          <td>Yes — this is the system working as intended.</td>
+          <td>Yes - this is the system working as intended.</td>
         </tr>
         <tr>
-          <td><span class="type-tag">B</span> — real fact, KG gap</td>
+          <td><span class="type-tag">B</span> - real fact, KG gap</td>
           <td>A checkable-in-principle historical detail the KG simply hasn't modeled yet.</td>
-          <td class="si">"ඇතුන් ලවා ගල් පෑගවීම" — elephants used to compact the foundation stones</td>
+          <td class="si">"ඇතුන් ලවා ගල් පෑගවීම" - elephants used to compact the foundation stones</td>
           <td>UNVERIFIABLE</td>
           <td>Correct call, but it's a <em>KG coverage</em> signal, not a student-accuracy signal.</td>
         </tr>
         <tr>
-          <td><span class="type-tag">C</span> — editorial / rhetorical</td>
-          <td>A value judgment, character study, or narrative flourish — not a factual proposition even in principle.</td>
-          <td class="si">"...හෙළ අනන්‍යතාවය සහ බෞද්ධ සංස්කෘතියේ මුරදේවතාවා වේ" — "guardian deity of Hela identity and Buddhist culture"</td>
+          <td><span class="type-tag">C</span> - editorial / rhetorical</td>
+          <td>A value judgment, character study, or narrative flourish - not a factual proposition even in principle.</td>
+          <td class="si">"...හෙළ අනන්‍යතාවය සහ බෞද්ධ සංස්කෘතියේ මුරදේවතාවා වේ" - "guardian deity of Hela identity and Buddhist culture"</td>
           <td>UNVERIFIABLE</td>
           <td>No KG, however complete, could ever verify this. It shouldn't count against coverage at all.</td>
         </tr>
         <tr>
-          <td><span class="type-tag">D</span> — compound claim</td>
+          <td><span class="type-tag">D</span> - compound claim</td>
           <td>A verifiable factual core bundled with an unverifiable qualifier (motive, technique, superlative).</td>
           <td class="si">"...මිරිසවැටිය චෛත්‍යය සහ ලෝවාමහාපාය ඉදිකළේය" + unconfirmed motive clause</td>
           <td>UNVERIFIABLE <em>(or the self-contradictory INCORRECT above)</em></td>
-          <td>No — the verifiable core (built X and Y) gets zero credit.</td>
+          <td>No - the verifiable core (built X and Y) gets zero credit.</td>
         </tr>
       </table>
     </div>
@@ -262,14 +262,14 @@ footer{ margin-top:64px; padding-top:20px; border-top:1px solid var(--rule); fon
     <p>The scoring formula is sound in its own terms:</p>
     <pre>Factual Precision = correct / (correct + incorrect)
 KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
-    <p>But when Type&nbsp;B and Type&nbsp;C both land in the same <code>unverifiable_claims</code> bucket, <code>total_claims</code> grows for reasons that have nothing to do with the KG's completeness. An essay that states every fact correctly but is written in a reflective, evaluative register — introductions, character studies, and conclusions almost always are — will show a low <code>coverage_ratio</code>, trip <code>coverage_warning</code>, and can drag <code>confidence_level</code> to LOW, even though it made zero factual errors. In the excerpt shared, 13 of 14 visible claims were editorial-register sentences (Type&nbsp;C) rather than KG gaps (Type&nbsp;B) — under the current rules, all 13 count identically against coverage.</p>
+    <p>But when Type&nbsp;B and Type&nbsp;C both land in the same <code>unverifiable_claims</code> bucket, <code>total_claims</code> grows for reasons that have nothing to do with the KG's completeness. An essay that states every fact correctly but is written in a reflective, evaluative register - introductions, character studies, and conclusions almost always are - will show a low <code>coverage_ratio</code>, trip <code>coverage_warning</code>, and can drag <code>confidence_level</code> to LOW, even though it made zero factual errors. In the excerpt shared, 13 of 14 visible claims were editorial-register sentences (Type&nbsp;C) rather than KG gaps (Type&nbsp;B) - under the current rules, all 13 count identically against coverage.</p>
   </section>
 
   <div class="divider"><span>Resolution</span></div>
 
   <section>
     <div class="sec-head"><span class="sec-num">§4</span><h2>Design principle</h2></div>
-    <p>None of the above should be solved by making UNVERIFIABLE rarer, or by loosening what counts as CORRECT — that would compromise the actual research contribution (grounding claims strictly in KG evidence, never in Claude's own historical knowledge). The fix is to make the pipeline <em>say more</em> about each UNVERIFIABLE, and to let a compound claim be graded on its verifiable core instead of its weakest clause — not to change when something is allowed to be CORRECT.</p>
+    <p>None of the above should be solved by making UNVERIFIABLE rarer, or by loosening what counts as CORRECT - that would compromise the actual research contribution (grounding claims strictly in KG evidence, never in Claude's own historical knowledge). The fix is to make the pipeline <em>say more</em> about each UNVERIFIABLE, and to let a compound claim be graded on its verifiable core instead of its weakest clause - not to change when something is allowed to be CORRECT.</p>
   </section>
 
   <section>
@@ -277,7 +277,7 @@ KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
 
     <div class="rec">
       <div class="rec-mark rec-do">1</div>
-      <div class="rec-body"><b>Fix §1 — surface ALSO_KNOWN_AS facts</b><span>Include alias/title edges in the prompt's fact list. No schema change, no scoring impact, pure evidence gap closed.</span></div>
+      <div class="rec-body"><b>Fix §1 - surface ALSO_KNOWN_AS facts</b><span>Include alias/title edges in the prompt's fact list. No schema change, no scoring impact, pure evidence gap closed.</span></div>
     </div>
     <div class="rec">
       <div class="rec-mark rec-do">2</div>
@@ -289,11 +289,11 @@ KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
     </div>
     <div class="rec">
       <div class="rec-mark rec-do">4</div>
-      <div class="rec-body"><b>Grade compound claims on their verifiable core</b><span>Instruct Claude: if a sentence's central assertion matches a KG fact, verdict is CORRECT even if a secondary clause (motive, technique, superlative) isn't covered — note the uncovered part in <code>explanation</code> rather than downgrading the verdict. Directly fixes §2's self-contradiction and recovers credit for the Mirisavetiya sentence.</span></div>
+      <div class="rec-body"><b>Grade compound claims on their verifiable core</b><span>Instruct Claude: if a sentence's central assertion matches a KG fact, verdict is CORRECT even if a secondary clause (motive, technique, superlative) isn't covered - note the uncovered part in <code>explanation</code> rather than downgrading the verdict. Directly fixes §2's self-contradiction and recovers credit for the Mirisavetiya sentence.</span></div>
     </div>
     <div class="rec">
       <div class="rec-mark rec-later">5</div>
-      <div class="rec-body"><b>Future work — full sub-claim decomposition</b><span>Splitting one sentence into several atomic claims (one per checkable proposition) would be the most precise fix for Type D, but needs prompt, schema, <em>and</em> UI changes to group sub-claims under their source sentence. Worth a "future work" line in the thesis; not required to resolve the cases seen so far — item&nbsp;4 already recovers the credit without the added complexity.</span></div>
+      <div class="rec-body"><b>Future work - full sub-claim decomposition</b><span>Splitting one sentence into several atomic claims (one per checkable proposition) would be the most precise fix for Type D, but needs prompt, schema, <em>and</em> UI changes to group sub-claims under their source sentence. Worth a "future work" line in the thesis; not required to resolve the cases seen so far - item&nbsp;4 already recovers the credit without the added complexity.</span></div>
     </div>
   </section>
 
@@ -316,14 +316,14 @@ KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
   (e.g. "the greatest ruler", "a golden milestone", "guardian deity
   of Hela identity"). These ALWAYS get verdict=UNVERIFIABLE and
   unverifiable_reason=NOT_FACTUAL. No KG could ever confirm or deny
-  these — do not attempt to.
+  these - do not attempt to.
 - claim_type = FACTUAL for anything describing an event, date,
-  relationship, construction, or alternate name/title — even if the
+  relationship, construction, or alternate name/title - even if the
   specific detail is not covered by the provided KG facts.
 
 <span class="c"># grading a FACTUAL claim</span>
 - If the claim's central assertion matches a KG fact, verdict =
-  CORRECT — even if a secondary clause (motive, method, superlative)
+  CORRECT - even if a secondary clause (motive, method, superlative)
   is not covered by the KG. Note the uncovered part in `explanation`;
   do not let it pull the verdict down to UNVERIFIABLE or INCORRECT.
 - verdict = INCORRECT only if a KG fact is DIRECTLY contradicted
@@ -334,8 +334,8 @@ KG Coverage Ratio  = (correct + incorrect) / total_claims</pre>
   </section>
 
   <section>
-    <div class="sec-head"><span class="sec-num">§7</span><h2>Scoring formula — proposed update</h2></div>
-    <p>Same shape, narrower denominator. <code>total_claims</code> becomes <code>total_factual_claims</code> — EDITORIAL claims are dropped from the scoring math but not from the output; they still render in the UI, just outside the score.</p>
+    <div class="sec-head"><span class="sec-num">§7</span><h2>Scoring formula - proposed update</h2></div>
+    <p>Same shape, narrower denominator. <code>total_claims</code> becomes <code>total_factual_claims</code> - EDITORIAL claims are dropped from the scoring math but not from the output; they still render in the UI, just outside the score.</p>
     <pre>Factual Precision = correct / (correct + incorrect)                    <span class="c"># unchanged</span>
 KG Coverage Ratio  = (correct + incorrect) / total_<span class="k">factual</span>_claims        <span class="c"># denominator narrowed</span>
 Confidence         = HIGH if (correct + incorrect) &gt;= 5, else LOW      <span class="c"># unchanged</span>
@@ -351,10 +351,10 @@ KG Gap Claims      = count of unverifiable_reason == NOT_IN_KG         <span cla
       <span class="sec-num">§8</span><h2>What needs a decision before implementation</h2>
       <span class="chip chip-question">Open</span>
     </div>
-    <p>Item&nbsp;1 in §5 is a pure bug fix with no methodology implications — safe to apply regardless. Items&nbsp;2–4 change what <code>coverage_ratio</code> and <code>confidence_level</code> mean, which is worth a deliberate call given they'll likely be referenced in the thesis methodology section:</p>
+    <p>Item&nbsp;1 in §5 is a pure bug fix with no methodology implications - safe to apply regardless. Items&nbsp;2–4 change what <code>coverage_ratio</code> and <code>confidence_level</code> mean, which is worth a deliberate call given they'll likely be referenced in the thesis methodology section:</p>
     <ul>
       <li>Apply the ALSO_KNOWN_AS fix now, on its own?</li>
-      <li>Adopt the <code>claim_type</code> / <code>unverifiable_reason</code> split (items 2–4), which changes the coverage_ratio denominator — or keep the current single-bucket UNVERIFIABLE for methodological consistency with any results already written up?</li>
+      <li>Adopt the <code>claim_type</code> / <code>unverifiable_reason</code> split (items 2–4), which changes the coverage_ratio denominator - or keep the current single-bucket UNVERIFIABLE for methodological consistency with any results already written up?</li>
       <li>Is sub-claim decomposition (item 5) worth scoping now, or noted as future work?</li>
     </ul>
   </section>

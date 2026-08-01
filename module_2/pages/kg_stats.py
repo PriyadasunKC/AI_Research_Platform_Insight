@@ -1,4 +1,4 @@
-"""pages/kg_stats.py — Knowledge Graph Statistics page."""
+"""pages/kg_stats.py - Knowledge Graph Statistics page."""
 
 from __future__ import annotations
 

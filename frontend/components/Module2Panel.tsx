@@ -14,17 +14,17 @@ export default function Module2Panel({
   downloadName = "module2_result.json",
 }: {
   state: FetchState<Module2Result>;
-  /** Adds a "raw JSON" block with Copy/Download — off by default so the
+  /** Adds a "raw JSON" block with Copy/Download - off by default so the
    * combined-flow page (which already has its own Combined Output JSON
    * panel) doesn't change. Turned on for the standalone Module 2 page. */
   showJsonExport?: boolean;
   downloadName?: string;
 }) {
   if (state.status === "loading") {
-    return <PanelShell title="Module 2 — Historical Accuracy (D1)" status="loading" />;
+    return <PanelShell title="Module 2 - Historical Accuracy (D1)" status="loading" />;
   }
   if (state.status === "error") {
-    return <PanelShell title="Module 2 — Historical Accuracy (D1)" status="error" error={state.error} />;
+    return <PanelShell title="Module 2 - Historical Accuracy (D1)" status="error" error={state.error} />;
   }
   if (state.status === "idle" || !state.data) return null;
 
@@ -32,7 +32,7 @@ export default function Module2Panel({
 
   return (
     <PanelShell
-      title="Module 2 — Historical Accuracy (D1)"
+      title="Module 2 - Historical Accuracy (D1)"
       subtitle={
         r.essay_subject
           ? `Subject: ${r.essay_subject}  ·  ${r.processing_seconds}s`
@@ -51,7 +51,7 @@ export default function Module2Panel({
 
       {r.coverage_warning && (
         <p className="mt-3 rounded-lg border border-amber-800 bg-amber-950/30 p-3 text-xs text-amber-300">
-          Knowledge Graph coverage for this essay is low ({Math.round(r.coverage_ratio * 100)}%) — this
+          Knowledge Graph coverage for this essay is low ({Math.round(r.coverage_ratio * 100)}%) - this
           score is based on limited evidence.
         </p>
       )}
@@ -59,7 +59,7 @@ export default function Module2Panel({
       {r.combined_teacher_feedback && (
         <div className="mt-4 rounded-lg border border-indigo-800 bg-indigo-950/30 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-indigo-300">
-            Teacher Feedback — All Claims
+            Teacher Feedback - All Claims
           </p>
           <p className="mt-2 whitespace-pre-line text-sm text-slate-200">{r.combined_teacher_feedback}</p>
         </div>
@@ -90,7 +90,7 @@ export default function Module2Panel({
       {showJsonExport && (
         <div className="mt-4 space-y-2">
           <p className="text-xs font-medium text-slate-400">
-            Raw JSON — download this to use on the Module 1 combine page
+            Raw JSON - download this to use on the Module 1 combine page
           </p>
           <JsonBlock data={r} downloadName={downloadName} />
         </div>

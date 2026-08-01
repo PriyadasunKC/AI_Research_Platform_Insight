@@ -2,7 +2,7 @@
 utils/export_module3.py
 ========================
 Generates a file for every scored essay so it can be sent to Module 3
-manually (however you like — email, WhatsApp, USB stick) until the two
+manually (however you like - email, WhatsApp, USB stick) until the two
 modules are wired together via a direct API call.
 
 Produces, per essay:
@@ -11,7 +11,7 @@ Produces, per essay:
   - a .txt file  → short human-readable version of the same data,
                     useful for a quick look without opening the JSON
 
-Nothing here talks to Module 3 or any messaging service — it only
+Nothing here talks to Module 3 or any messaging service - it only
 writes the files. Sharing them is up to you.
 """
 
@@ -89,8 +89,8 @@ def build_module3_payload(essay_text: str, scores: dict, notes: dict,
                            rag_context: list | None = None) -> dict:
     """
     Build the object sent to Module 3, based on the shape documented in
-    section 10.2 of the Module 1 docs — with all four dimensions relabelled
-    to their full names (D1 included, via Module 2's server-side result —
+    section 10.2 of the Module 1 docs - with all four dimensions relabelled
+    to their full names (D1 included, via Module 2's server-side result -
     see utils/module2_client.py), and a "weakest_area" block added right
     after them:
 
@@ -115,7 +115,7 @@ def build_module3_payload(essay_text: str, scores: dict, notes: dict,
         "scores": renamed_scores,
         "notes": renamed_notes,
         "weakest_area": _weakest_area_block(weakest, renamed_scores, renamed_notes),
-        # RAG isn't wired into app.py's /score yet (Stage 3 in the docs) —
+        # RAG isn't wired into app.py's /score yet (Stage 3 in the docs) -
         # left as an empty list so the shape matches what Module 3 expects.
         "rag_context": rag_context or [],
     }
@@ -128,7 +128,7 @@ def build_readable_summary(essay_id: str, payload: dict, average_score=None,
     notes = payload.get("notes", {})
 
     lines = [
-        "INSIGHT — Module 1 → Module 3 handoff",
+        "INSIGHT - Module 1 → Module 3 handoff",
         f"Essay ID   : {essay_id}",
         f"Generated  : {datetime.now(timezone.utc).isoformat(timespec='seconds')}Z",
         f"Word count : {len(payload.get('essay_text', '').split())}",
@@ -187,7 +187,7 @@ def save_export_files(essay_text: str, scores: dict, notes: dict,
         }
 
     `weakest` is the dimension code (e.g. "D4") the /score route already
-    computes as the essay's weakest area — pass it through so it gets
+    computes as the essay's weakest area - pass it through so it gets
     added to the exported files right after the three dimensions.
     """
     payload = build_module3_payload(essay_text, scores, notes,

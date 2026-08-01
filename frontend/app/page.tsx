@@ -30,13 +30,13 @@ export default function Home() {
 
     // Only Module 1 is called from the browser. Module 1's own /score call
     // ALSO calls Module 2 server-side (see module_1/app.py) and embeds the
-    // full raw Module 2 response in module2_result — the Module 2 panel
+    // full raw Module 2 response in module2_result - the Module 2 panel
     // reads from that instead of making its own separate call.
     //
     // Deliberately NOT calling Module 2 directly here anymore: it used to
     // fire in parallel purely so its panel could render slightly earlier,
     // but that meant Module 2 graded the SAME essay twice, concurrently
-    // (once for this call, once for Module 1's server-side call) — doubling
+    // (once for this call, once for Module 1's server-side call) - doubling
     // its real workload for every single essay check and causing Module
     // 1's own call to occasionally time out on long essays. One call per
     // essay check is the correct tradeoff even though the Module 2 panel
@@ -51,7 +51,7 @@ export default function Home() {
         setModule2State({
           status: "error",
           data: null,
-          error: "Module 2 result unavailable — Module 1 did not return a result.",
+          error: "Module 2 result unavailable - Module 1 did not return a result.",
         });
         return null;
       });
@@ -60,7 +60,7 @@ export default function Home() {
       setCombinedState({
         status: "error",
         data: null,
-        error: "Combined output unavailable — Module 1 did not return a result.",
+        error: "Combined output unavailable - Module 1 did not return a result.",
       });
       return;
     }
@@ -100,7 +100,7 @@ export default function Home() {
           <Link href="/module1-combine" className="text-indigo-400 hover:text-indigo-300">
             Module 1 alone with an uploaded Module 2 JSON
           </Link>{" "}
-          instead — one backend at a time.
+          instead - one backend at a time.
         </p>
       </header>
 

@@ -1,4 +1,4 @@
-"""pages/kg_viewer.py — Interactive Knowledge Graph visualization page."""
+"""pages/kg_viewer.py - Interactive Knowledge Graph visualization page."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ _NODE_COLORS: dict[str, str] = {
 
 _ALL_NODE_TYPES = list(_NODE_COLORS.keys())
 _EDGE_COLOR     = "#5c6bc0"
-_MAX_NODES      = 1000  # graph display cap — largest component shown when exceeded
+_MAX_NODES      = 1000  # graph display cap - largest component shown when exceeded
 _MAX_TRIPLES    = 5000  # Neo4j fetch limit for table / edit / delete
 _CARD_OPEN      = '<div class="kg-card">'
 _CARD_CLOSE     = '</div>'
@@ -386,7 +386,7 @@ def _render_delete_section(df) -> None:
                     st.session_state["_kg_save_msg"] = f"Deleted: {selected}"
                     st.rerun()
                 else:
-                    st.warning("Relation not found in Neo4j — may have already been deleted.")
+                    st.warning("Relation not found in Neo4j - may have already been deleted.")
             except Exception as exc:
                 st.error(f"Delete failed: {exc}")
 
@@ -778,11 +778,11 @@ def _do_save_manual(
                 "type": "warning",
                 "text": f"Already in KG (duplicate skipped): **{subj_name}** ──{relation}──▶ **{obj_name}**",
             }
-        else:  # None — one or both nodes not found
+        else:  # None - one or both nodes not found
             st.session_state["_kg_manual_msg"] = {
                 "type": "error",
                 "text": (
-                    f"Could not save — one or both nodes not found in KG: "
+                    f"Could not save - one or both nodes not found in KG: "
                     f"**{subj_name}** / **{obj_name}**. "
                     "Make sure both entities exist before creating a relation."
                 ),
@@ -806,7 +806,7 @@ def _render_manual_relation_section(
         unsafe_allow_html=True,
     )
     st.caption(
-        "Add historically accurate relations the pipeline missed — e.g. entities the "
+        "Add historically accurate relations the pipeline missed - e.g. entities the "
         "NER model does not tag (Buddhist councils, festivals, treaties, etc.). "
         "Select an existing node or create a new one on either side."
     )
@@ -894,7 +894,7 @@ def _render_manual_relation_section(
     with col_n:
         note = st.text_input(
             "Source / note", key="kg_man_note",
-            placeholder="e.g. Mahavamsa Ch. 33 — manual entry",
+            placeholder="e.g. Mahavamsa Ch. 33 - manual entry",
         )
 
     # Show feedback from previous save attempt (cleared on next save)
@@ -972,7 +972,7 @@ def _render_graph_section(
 
     if oversized:
         st.info(
-            f"The KG has more than {_MAX_NODES} nodes — showing only the "
+            f"The KG has more than {_MAX_NODES} nodes - showing only the "
             "largest connected component."
         )
 
@@ -1009,7 +1009,7 @@ def _render_graph_with_focus(triples: list[dict], all_relations: list[str]) -> N
     )
 
     if focused:
-        st.info(f"Focused on **{focused}** — click empty area in the graph to show all")
+        st.info(f"Focused on **{focused}** - click empty area in the graph to show all")
         if st.button("✕ Show full graph", key="kg_clear_focus"):
             st.session_state.pop("kg_focused_node", None)
             st.rerun()

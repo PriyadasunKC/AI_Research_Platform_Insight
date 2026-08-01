@@ -1,9 +1,9 @@
 """
-kg_aliases.py — Same-person different-name resolution for the KG storage layer.
+kg_aliases.py - Same-person different-name resolution for the KG storage layer.
 
 Distinct from normalizer.py (morphological inflection):
-  normalizer.py  — surface-form variation of the SAME name
-  kg_aliases.py  — COMPLETELY DIFFERENT names used for the same person/entity
+  normalizer.py  - surface-form variation of the SAME name
+  kg_aliases.py  - COMPLETELY DIFFERENT names used for the same person/entity
                    across different historical source texts
 
 This module is intentionally DB-agnostic: it is a pure Python dictionary lookup

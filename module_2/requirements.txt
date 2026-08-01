@@ -20,7 +20,7 @@ numpy>=1.26.0               # Tensor post-processing
 neo4j>=5.0.0                # Neo4j Python driver
 
 # ── Document database ──────────────────────────────────────────────────────────
-pymongo>=4.6.0              # MongoDB driver — pipeline run history
+pymongo>=4.6.0              # MongoDB driver - pipeline run history
 
 # ── Graph processing & visualization ──────────────────────────────────────────
 networkx>=3.0               # Graph algorithms (largest connected component)

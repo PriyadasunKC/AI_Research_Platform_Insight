@@ -32,9 +32,9 @@ export default function Module2OnlyPage() {
         <Link href="/" className="text-sm text-indigo-400 hover:text-indigo-300">
           ← Back
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-slate-100">Module 2 — Historical Accuracy Only</h1>
+        <h1 className="mt-2 text-2xl font-bold text-slate-100">Module 2  Historical Accuracy Only</h1>
         <p className="mt-2 text-sm text-slate-400">
-          Run Module 2 by itself — no dependency on Module 1 being up. Use this when only Module 2&apos;s
+          Run Module 2 by itself - no dependency on Module 1 being up. Use this when only Module 2&apos;s
           backend is running on this machine. Download the result JSON below and use it on the{" "}
           <Link href="/module1-combine" className="text-indigo-400 hover:text-indigo-300">
             Module 1 combine page

@@ -1,7 +1,7 @@
 """
 models/rule_based_scorer.py
 ============================
-Master scorer — combines D2, D3, D4 rule-based dimension scores.
+Master scorer - combines D2, D3, D4 rule-based dimension scores.
 Returns unified dict with:
   - scores        : {D1, D2, D3, D4}
   - notes         : structured notes for Module 3 (SinLlama)
@@ -58,7 +58,7 @@ def _d3_how_to_improve(d3):
     if d3['academic_density'] < 0.10:
         tips.append('Add academic terms: රාජකීය, සංස්කෘතික, ශිෂ්ටාචාරය, ඓතිහාසික')
     if d3['informal_words']:
-        tips.append('Use formal Sinhala — avoid informal verb forms')
+        tips.append('Use formal Sinhala - avoid informal verb forms')
     return ' | '.join(tips) if tips else 'Maintain current vocabulary level.'
 
 def _d4_what_wrong(d4):
@@ -72,7 +72,7 @@ def _d4_what_wrong(d4):
 def _d4_how_to_improve(d4):
     tips = []
     if not d4['has_intro']:      tips.append('Start with intro paragraph introducing the topic')
-    if not d4['has_thesis']:     tips.append('Add thesis — state your main argument in the intro')
+    if not d4['has_thesis']:     tips.append('Add thesis - state your main argument in the intro')
     if not d4['has_body']:       tips.append('Write 3 separate body paragraphs, each with one main point')
     if not d4['has_conclusion']: tips.append('End with: අවසාන වශයෙන්, මෙලෙස')
     return ' | '.join(tips) if tips else 'Maintain current structure.'
@@ -99,14 +99,14 @@ def score_essay(essay_text: str, d1_score: int = None) -> dict:
     Returns
     -------
     dict with keys:
-        scores        — {D1, D2, D3, D4}  integer scores
-        notes         — structured notes for Module 3
-        dimensions    — per-dimension detail dict for Flask UI
-        average_score — float
-        summary_si    — Sinhala summary string
-        model_type    — 'rule_based'
-        word_count    — int
-        elapsed_sec   — float
+        scores        - {D1, D2, D3, D4}  integer scores
+        notes         - structured notes for Module 3
+        dimensions    - per-dimension detail dict for Flask UI
+        average_score - float
+        summary_si    - Sinhala summary string
+        model_type    - 'rule_based'
+        word_count    - int
+        elapsed_sec   - float
     """
     if not essay_text or not essay_text.strip():
         raise ValueError('Essay text cannot be empty.')

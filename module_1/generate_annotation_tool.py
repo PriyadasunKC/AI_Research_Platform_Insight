@@ -18,7 +18,7 @@ html = f"""<!DOCTYPE html>
 <html lang="si">
 <head>
 <meta charset="UTF-8"/>
-<title>Insight — Annotation Tool</title>
+<title>Insight - Annotation Tool</title>
 <style>
 *{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}}
@@ -89,7 +89,7 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
 </head>
 <body>
 <header>
-  <h1>📝 Insight — Essay Annotation Tool</h1>
+  <h1>📝 Insight - Essay Annotation Tool</h1>
   <span id="hdr-count">1 / {count}</span>
 </header>
 
@@ -114,10 +114,10 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
   <!-- Scoring rubric (collapsible) -->
   <div class="card">
     <details>
-      <summary>📋 Scoring Rubric — Click to expand</summary>
+      <summary>📋 Scoring Rubric - Click to expand</summary>
       <br/>
       <table class="rubric-table">
-        <tr><th>Score</th><th>D2 — සම්බන්ධිතතාව</th><th>D3 — වචන සම්පත</th><th>D4 — ව්‍යූහය</th></tr>
+        <tr><th>Score</th><th>D2 - සම්බන්ධිතතාව</th><th>D3 - වචන සම්පත</th><th>D4 - ව්‍යූහය</th></tr>
         <tr><td><strong>5</strong></td>
             <td>සම්බන්ධක 4+ වර්ග (හේතු, විරෝධ, එකතු, අනුක්‍රම, උදාහරණ)</td>
             <td>ශාස්ත්‍රීය වචන බහුල, නැවත නොයෙදේ, විධිමත්</td>
@@ -155,15 +155,15 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
     <div class="score-chips" id="chips"></div>
 
     <!-- D2 -->
-    <div class="section-title">D2 — සම්බන්ධිතතාව හා අදහස් ප්‍රවාහය</div>
+    <div class="section-title">D2 - සම්බන්ධිතතාව හා අදහස් ප්‍රවාහය</div>
     <div class="section-desc">
-      "එබැවින්", "නමුත්", "ඉන් පසු", "එසේම", "උදාහරණයක් ලෙස" — කී වර්ගයක් භාවිත කර ඇත්ද?
+      "එබැවින්", "නමුත්", "ඉන් පසු", "එසේම", "උදාහරණයක් ලෙස" - කී වර්ගයක් භාවිත කර ඇත්ද?
     </div>
     <div class="btn-row" id="btns-d2"></div>
     <div class="meaning"  id="mean-d2"></div>
 
     <!-- D3 -->
-    <div class="section-title">D3 — වචන සම්පත</div>
+    <div class="section-title">D3 - වචන සම්පත</div>
     <div class="section-desc">
       ශාස්ත්‍රීය / ඉතිහාස වචන, නැවත නැවත නොයෙදීම, විධිමත් භාෂාව.
     </div>
@@ -171,7 +171,7 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
     <div class="meaning"  id="mean-d3"></div>
 
     <!-- D4 -->
-    <div class="section-title">D4 — රචනා ව්‍යූහය</div>
+    <div class="section-title">D4 - රචනා ව්‍යූහය</div>
     <div class="section-desc">
       හැඳින්වීම + ප්‍රධාන තර්කය + ශරීරය (ඡේද 3+) + නිගමනය.
     </div>
@@ -179,7 +179,7 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
     <div class="meaning"  id="mean-d4"></div>
 
     <!-- Notes -->
-    <label class="notes-lbl">📌 සටහන් — ලකුණු ලබා දීමේ හේතු:</label>
+    <label class="notes-lbl">📌 සටහන් - ලකුණු ලබා දීමේ හේතු:</label>
     <textarea id="notes" placeholder="ඔබේ ඇගයීමේ හේතු ලියන්න..."></textarea>
 
     <div class="nav-row">
@@ -209,11 +209,11 @@ summary{{cursor:pointer;font-weight:600;color:#8B0000;font-size:.88rem;
 <script>
 const ESSAYS = {essays_js};
 const MEANINGS = {{
-  1:"1 — ඉතාම දුර්වලය",
-  2:"2 — දුර්වලය",
-  3:"3 — සාමාන්‍යය",
-  4:"4 — හොඳය",
-  5:"5 — ඉතාම හොඳය"
+  1:"1 - ඉතාම දුර්වලය",
+  2:"2 - දුර්වලය",
+  3:"3 - සාමාන්‍යය",
+  4:"4 - හොඳය",
+  5:"5 - ඉතාම හොඳය"
 }};
 
 let cur  = 0;
@@ -232,7 +232,7 @@ function render(idx) {{
     st.textContent = '✅ Reviewed by ' + (e.annotator || '?');
     st.className   = 'badge b-done';
   }} else {{
-    st.textContent = 'Auto-scored — needs review';
+    st.textContent = 'Auto-scored - needs review';
     st.className   = 'badge b-auto';
   }}
 

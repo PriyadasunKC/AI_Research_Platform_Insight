@@ -1,11 +1,11 @@
 """
-kg_store.py — Neo4j storage module for the Sinhala Historical KG.
+kg_store.py - Neo4j storage module for the Sinhala Historical KG.
 
 Design principle: switching to a different graph DB only requires changing
 this file. All callers (pipeline.py, Streamlit pages) use only the public
 functions defined at the bottom of this module.
 
-Connection is lazy — the driver is created on first use so that importing
+Connection is lazy - the driver is created on first use so that importing
 this module never raises, even when Neo4j is not running.
 """
 
@@ -57,7 +57,7 @@ _driver = None
 _indexes_ensured = False
 
 # If a connection attempt fails, don't retry on every single call for a
-# while — essay-checker callers may call into this module once per king
+# while - essay-checker callers may call into this module once per king
 # found in an essay (see kg_fact_retriever.get_facts_for_king), and without
 # this cooldown, a genuinely-down Neo4j would pay a fresh connection-timeout
 # cost on every one of those calls instead of failing fast after the first.
@@ -142,7 +142,7 @@ _SINHALA_CASE_SUFFIXES: tuple[str, ...] = (
 
 
 def _nfc(name: str) -> str:
-    """Unicode NFC-normalize and strip whitespace — prevents invisible-char duplicates."""
+    """Unicode NFC-normalize and strip whitespace - prevents invisible-char duplicates."""
     return unicodedata.normalize("NFC", name.strip())
 
 
@@ -189,12 +189,12 @@ def _safe_relation(relation: str) -> str:
 # Public API
 
 def resolve_entity_name(name: str) -> str:
-    """Public wrapper — resolve any name/alias to its KG canonical form."""
+    """Public wrapper - resolve any name/alias to its KG canonical form."""
     return _canonical_entity(name)
 
 
 def normalize_name(name: str) -> str:
-    """NFC-normalize and strip whitespace only — no suffix stripping or alias resolution.
+    """NFC-normalize and strip whitespace only - no suffix stripping or alias resolution.
 
     Use this for manually entered entity names where the user has already chosen
     the exact canonical form they want stored.
@@ -237,7 +237,7 @@ def update_node_label(name: str, new_label: str) -> bool:
         if old_label == new_label:
             return True  # nothing to do
 
-        # old_label is sourced from Neo4j and constrained to the allowed set — safe to embed
+        # old_label is sourced from Neo4j and constrained to the allowed set - safe to embed
         if old_label:
             _safe_label(old_label)  # validate before embedding in Cypher
             s.run(
@@ -278,7 +278,7 @@ def update_relation_properties(
     new_relation = _safe_relation(new_relation)
 
     with drv.session() as s:
-        # Exact-name lookup — subject/object are real node names from the UI
+        # Exact-name lookup - subject/object are real node names from the UI
         subj_rec = s.run(_CQL_EID_BY_NAME, name=subject).single()
         if not subj_rec:
             subj_rec = s.run(_CQL_EID_BY_ALIAS, name=subject).single()
@@ -294,7 +294,7 @@ def update_relation_properties(
         b_eid = obj_rec["eid"]
 
         if old_relation == new_relation:
-            # Only period/source changed — update in place
+            # Only period/source changed - update in place
             result = s.run(
                 f"MATCH (a:Entity)-[r:`{old_relation}`]->(b:Entity) "
                 "WHERE elementId(a) = $a AND elementId(b) = $b "
@@ -304,7 +304,7 @@ def update_relation_properties(
             )
             return result.single() is not None
 
-        # Relation type changed — delete old, create new
+        # Relation type changed - delete old, create new
         s.run(
             f"MATCH (a:Entity)-[r:`{old_relation}`]->(b:Entity) "
             "WHERE elementId(a) = $a AND elementId(b) = $b DELETE r",
@@ -317,7 +317,7 @@ def update_relation_properties(
             a=a_eid, b=b_eid,
         ).single()
         if dup:
-            return True  # already exists with new type — old deleted, done
+            return True  # already exists with new type - old deleted, done
         result = s.run(
             "MATCH (a:Entity), (b:Entity) "
             "WHERE elementId(a) = $a AND elementId(b) = $b "
@@ -430,7 +430,7 @@ def upsert_relation(
     print(f"[KG] upsert_relation  subj={subject!r}  rel={relation!r}  obj={obj!r}")
 
     with drv.session() as s:
-        # Resolve nodes — exact name first, alias fallback.
+        # Resolve nodes - exact name first, alias fallback.
         # Exact-name priority ensures a node stored under this name is always
         # preferred over a different node that merely lists it as an alias.
         def _lookup_eid(session, name: str):
@@ -444,7 +444,7 @@ def upsert_relation(
 
         print(f"[KG] upsert_relation  subj_found={subj_rec is not None}  obj_found={obj_rec is not None}")
         if subj_rec is None or obj_rec is None:
-            print("[KG] upsert_relation  FAILED — one or both nodes missing in Neo4j")
+            print("[KG] upsert_relation  FAILED - one or both nodes missing in Neo4j")
             return False
 
         a_eid = subj_rec["eid"]
@@ -462,7 +462,7 @@ def upsert_relation(
             print("[KG] upsert_relation  SKIP (duplicate)")
             return False
 
-        # Create edge using element IDs — avoids name-mismatch if node was found via alias
+        # Create edge using element IDs - avoids name-mismatch if node was found via alias
         result = s.run(
             "MATCH (a:Entity), (b:Entity) "
             "WHERE elementId(a) = $a_eid AND elementId(b) = $b_eid "
@@ -507,7 +507,7 @@ def save_pipeline_result(
     for tag in ner_tags:
         node_label = _LABEL_MAP.get(tag.label)
         if node_label is None:
-            continue                          # DATE_ERA — never a KG node
+            continue                          # DATE_ERA - never a KG node
         canonical = _canonical_entity(tag.entity)
         aliases   = kg_aliases.get_aliases_for(canonical)
         upsert_entity(canonical, node_label, aliases)
@@ -524,7 +524,7 @@ def save_pipeline_result(
             if created:
                 edges_created += 1
         else:
-            print("[KG]   triple SKIPPED — missing subj/rel/obj")
+            print("[KG]   triple SKIPPED - missing subj/rel/obj")
 
     print(f"[KG] save_pipeline_result  done  nodes={nodes_processed}  edges={edges_created}")
     return {"nodes_processed": nodes_processed, "edges_created": edges_created}
@@ -631,14 +631,14 @@ def get_facts_for_entity_cluster(seed_names: list[str]) -> list[dict] | None:
 
     "Reachable" means: matches one of seed_names by exact node name or by an
     entry in that node's stored aliases, OR is linked to such a node via an
-    ALSO_KNOWN_AS edge (any number of hops, either direction) — the live
+    ALSO_KNOWN_AS edge (any number of hops, either direction) - the live
     equivalent of kg_fact_retriever.get_all_kg_names_for_king's transitive
     closure over the static export.
 
     Returns None (not []) if Neo4j is unreachable, so the caller
     (kg_fact_retriever.get_facts_for_king) can distinguish "Neo4j is down,
     fall back to the static export" from "queried successfully, this entity
-    genuinely has zero facts right now" — in the second case an empty list
+    genuinely has zero facts right now" - in the second case an empty list
     is the correct, real answer and must not trigger a fallback.
     """
     drv = _get_driver()
@@ -818,7 +818,7 @@ def merge_duplicate_node(from_name: str, to_name: str) -> dict:
                 continue
             b_eid = row["b_eid"]
             if b_eid == to_eid:
-                continue  # self-loop after merge — skip
+                continue  # self-loop after merge - skip
             dup = s.run(
                 f"MATCH (a:Entity)-[r:`{safe_type}`]->(b:Entity) "
                 "WHERE elementId(a) = $a AND elementId(b) = $b RETURN r LIMIT 1",
@@ -841,7 +841,7 @@ def merge_duplicate_node(from_name: str, to_name: str) -> dict:
                 continue
             a_eid = row["a_eid"]
             if a_eid == to_eid:
-                continue  # self-loop after merge — skip
+                continue  # self-loop after merge - skip
             dup = s.run(
                 f"MATCH (a:Entity)-[r:`{safe_type}`]->(b:Entity) "
                 "WHERE elementId(a) = $a AND elementId(b) = $b RETURN r LIMIT 1",

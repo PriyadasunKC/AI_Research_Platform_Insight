@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "AI Research Platform Insight — Module 1 + Module 2",
-    "description": "Test collection for the combined essay-feedback backend: Module 1 (Flask, port 5000, D2-D4 writing quality + calls Module 2 server-side for D1) and Module 2 (FastAPI, port 8010, historical accuracy via Knowledge Graph). Run the requests top to bottom under 'Full Flow' for the intended demo order — later requests auto-fill essay_id/run_id from earlier responses via collection variables.",
+    "name": "AI Research Platform Insight - Module 1 + Module 2",
+    "description": "Test collection for the combined essay-feedback backend: Module 1 (Flask, port 5000, D2-D4 writing quality + calls Module 2 server-side for D1) and Module 2 (FastAPI, port 8010, historical accuracy via Knowledge Graph). Run the requests top to bottom under 'Full Flow' for the intended demo order - later requests auto-fill essay_id/run_id from earlier responses via collection variables.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,7 +17,7 @@
       "name": "0. Health checks",
       "item": [
         {
-          "name": "Module 1 — Health",
+          "name": "Module 1 - Health",
           "request": {
             "method": "GET",
             "header": [],
@@ -29,7 +29,7 @@
           }
         },
         {
-          "name": "Module 2 — Health",
+          "name": "Module 2 - Health",
           "request": {
             "method": "GET",
             "header": [],
@@ -46,7 +46,7 @@
       "name": "Full Flow",
       "item": [
         {
-          "name": "1. Module 1 — Score essay (combined D1-D4)",
+          "name": "1. Module 1 - Score essay (combined D1-D4)",
           "event": [
             {
               "listen": "test",
@@ -78,11 +78,11 @@
               "host": ["{{module1_base_url}}"],
               "path": ["score"]
             },
-            "description": "Scores D2-D4 itself and calls Module 2 server-side for D1 — this one call returns the full combined result. Saves a Module-3 export file AND a MongoDB document (mongo_id in the response). Sets {{essay_id}} for the next requests."
+            "description": "Scores D2-D4 itself and calls Module 2 server-side for D1 - this one call returns the full combined result. Saves a Module-3 export file AND a MongoDB document (mongo_id in the response). Sets {{essay_id}} for the next requests."
           }
         },
         {
-          "name": "2. Module 1 — Get combined output for Module 3 (by essay_id)",
+          "name": "2. Module 1 - Get combined output for Module 3 (by essay_id)",
           "request": {
             "method": "GET",
             "header": [],
@@ -91,11 +91,11 @@
               "host": ["{{module1_base_url}}"],
               "path": ["api", "v1", "module3", "{{essay_id}}"]
             },
-            "description": "The actual external API Module 3 calls to fetch the combined D1-D4 JSON — run request 1 first so {{essay_id}} is set."
+            "description": "The actual external API Module 3 calls to fetch the combined D1-D4 JSON - run request 1 first so {{essay_id}} is set."
           }
         },
         {
-          "name": "3. Module 1 — Get combined output (latest, no essay_id needed)",
+          "name": "3. Module 1 - Get combined output (latest, no essay_id needed)",
           "request": {
             "method": "GET",
             "header": [],
@@ -107,7 +107,7 @@
           }
         },
         {
-          "name": "4. Module 1 — MongoDB history (recent runs)",
+          "name": "4. Module 1 - MongoDB history (recent runs)",
           "request": {
             "method": "GET",
             "header": [],
@@ -121,7 +121,7 @@
           }
         },
         {
-          "name": "5. Module 1 — MongoDB history (by essay_id)",
+          "name": "5. Module 1 - MongoDB history (by essay_id)",
           "request": {
             "method": "GET",
             "header": [],
@@ -133,7 +133,7 @@
           }
         },
         {
-          "name": "6. Module 2 — Check essay directly (for comparison / frontend-style parallel call)",
+          "name": "6. Module 2 - Check essay directly (for comparison / frontend-style parallel call)",
           "event": [
             {
               "listen": "test",
@@ -167,7 +167,7 @@
           }
         },
         {
-          "name": "7. Module 2 — Get result by run_id",
+          "name": "7. Module 2 - Get result by run_id",
           "request": {
             "method": "GET",
             "header": [
@@ -186,7 +186,7 @@
       "name": "File uploads",
       "item": [
         {
-          "name": "Module 1 — Score essay (file upload)",
+          "name": "Module 1 - Score essay (file upload)",
           "request": {
             "method": "POST",
             "header": [],
@@ -205,7 +205,7 @@
           }
         },
         {
-          "name": "Module 2 — Check essay (file upload)",
+          "name": "Module 2 - Check essay (file upload)",
           "request": {
             "method": "POST",
             "header": [

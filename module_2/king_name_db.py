@@ -1,14 +1,14 @@
 """
-king_name_db.py — King Name Knowledge Base (Stage 2, Module 2, 214161L)
+king_name_db.py - King Name Knowledge Base (Stage 2, Module 2, 214161L)
 
 Builds a master lookup of every Sri Lankan king / monarch name we know about,
 merging three sources:
 
-    1. data/sri_lankan_kings_all_names.txt — the authoritative name list,
+    1. data/sri_lankan_kings_all_names.txt - the authoritative name list,
        including kings not yet represented in the KG.
-    2. kg_aliases.CANONICAL_ALIASES        — the same-person alias map used
+    2. kg_aliases.CANONICAL_ALIASES        - the same-person alias map used
        by the storage layer (kg_store.py) when writing to Neo4j.
-    3. ALSO_KNOWN_AS edges — alternate names discovered by the extraction
+    3. ALSO_KNOWN_AS edges - alternate names discovered by the extraction
        pipeline itself. Read from the LIVE Neo4j database first; falls back
        to the static export (neo4j_query_table_data_2026-7-29.json) only if
        Neo4j is unreachable.
@@ -33,12 +33,12 @@ _KING_NAMES_FILE  = _DATA_DIR / "sri_lankan_kings_all_names.txt"
 _KG_JSON_FILE     = _DATA_DIR / "neo4j_query_table_data_2026-7-29.json"
 
 # Trailing Sinhala royal/monastic title suffixes stripped for comparison
-# purposes only — the underlying entity name is unaffected.
+# purposes only - the underlying entity name is unaffected.
 #
 # Beyond the suffixes explicitly required by the spec, "රජ" and "මහරජු" are
 # included because data/sri_lankan_kings_all_names.txt uses the informal
 # spelling "රජ" (no ු) for the vast majority of its 105 entries, while
-# kg_aliases.py's canonical keys mostly use the formal "රජු" — without this,
+# kg_aliases.py's canonical keys mostly use the formal "රජු" - without this,
 # most of the name-list entries would fail to resolve against the KG at all.
 _TITLE_SUFFIXES: tuple[str, ...] = (
     "හාමුදුරුවන්",
@@ -63,7 +63,7 @@ _SORTED_SUFFIXES: tuple[str, ...] = tuple(
 _FUZZY_THRESHOLD = 0.85
 
 # kg_aliases.CANONICAL_ALIASES also carries LOCATIONS / MONUMENTS / DYNASTIES /
-# CHRONICLES sections (needed by kg_store.py for entity normalization) — those
+# CHRONICLES sections (needed by kg_store.py for entity normalization) - those
 # are not people and must not be treated as "kings found" in an essay. The KG
 # JSON export has no per-entity type field to filter on programmatically, so
 # these canonical keys (exactly as they appear in kg_aliases.py) are excluded
@@ -100,7 +100,7 @@ def normalize_sinhala(text: str) -> str:
     return text
 
 
-# SOURCE 1 — sri_lankan_kings_all_names.txt
+# SOURCE 1 - sri_lankan_kings_all_names.txt
 
 _NUM_LINE_RE = re.compile(r"^\d+\.\s*(.+)$")
 _PAREN_RE    = re.compile(r"\s*\([^)]*\)\s*$")
@@ -125,12 +125,12 @@ def _parse_king_names_file() -> list[str]:
 KING_NAME_DB: list[str] = _parse_king_names_file()
 
 
-# SOURCE 3 — ALSO_KNOWN_AS edges, live Neo4j first, static export as fallback
+# SOURCE 3 - ALSO_KNOWN_AS edges, live Neo4j first, static export as fallback
 
 def _load_kg_json() -> list[dict]:
     """Return ALSO_KNOWN_AS-relevant triples: live Neo4j first, falling back
     to the static export only if Neo4j is unreachable (see kg_store.
-    get_also_known_as_edges — None signals "couldn't ask", not "no edges").
+    get_also_known_as_edges - None signals "couldn't ask", not "no edges").
     """
     import kg_store
     live = kg_store.get_also_known_as_edges()
@@ -154,7 +154,7 @@ def _kg_also_known_as_clusters(kg_data: list[dict]) -> dict[str, str]:
     Representative choice, in priority order:
       1. A cluster member that is itself a kg_aliases.CANONICAL_ALIASES key.
       2. The member that occurs most often (as subject or object) anywhere
-         else in the KG — a proxy for "the name actually used elsewhere".
+         else in the KG - a proxy for "the name actually used elsewhere".
       3. Arbitrary first member (Union-Find root).
     """
     parent: dict[str, str] = {}
@@ -229,7 +229,7 @@ def build_king_index() -> dict[str, str]:
             if key and key not in index:
                 index[key] = canonical
 
-    # 1. KING_NAME_DB — resolve to the KG canonical if already known there.
+    # 1. KING_NAME_DB - resolve to the KG canonical if already known there.
     for raw_name in KING_NAME_DB:
         stripped  = normalize_sinhala(raw_name)
         canonical = kg_aliases.resolve_to_canonical(stripped)
@@ -239,7 +239,7 @@ def build_king_index() -> dict[str, str]:
                 canonical = alt
         _register(raw_name, canonical)
 
-    # 2. kg_aliases.CANONICAL_ALIASES — canonical keys + every alias,
+    # 2. kg_aliases.CANONICAL_ALIASES - canonical keys + every alias,
     #    excluding the non-person (location/monument/dynasty/chronicle) entries.
     for canonical, aliases in kg_aliases.CANONICAL_ALIASES.items():
         if canonical in _NON_PERSON_CANONICALS:
@@ -251,7 +251,7 @@ def build_king_index() -> dict[str, str]:
     # 3. ALSO_KNOWN_AS entities from the KG JSON (transitively clustered).
     # The JSON has no per-entity type field, so a cluster is only accepted
     # into this *king* index if at least one of its members is already a
-    # known person name from step 1 or step 2 above — this keeps unrelated
+    # known person name from step 1 or step 2 above - this keeps unrelated
     # place/monument ALSO_KNOWN_AS chains (e.g. temple alt-names) out.
     known_person_names: set[str] = set(index.keys()) | set(index.values())
     kg_data = _load_kg_json()
@@ -272,12 +272,12 @@ def build_king_index() -> dict[str, str]:
 
 # Word-boundary guard for Pass 1 (see _has_clean_boundary): a short index
 # entry like the alias "සිංහ" (for සිංහබාහු) is a literal substring of the
-# ordinary word "සිංහල" ("Sinhala"/the nation) — which appears constantly in
+# ordinary word "සිංහල" ("Sinhala"/the nation) - which appears constantly in
 # any Sinhala historical essay. Naive substring matching turned every mention
 # of "Sinhala" into a false hit for king සිංහබාහු, which was frequent enough
 # to hijack primary-subject detection on essays that never mention him at
 # all. A match is only accepted if it isn't glued to more Sinhala-script
-# text on either side — except when that continuation is a recognised
+# text on either side - except when that continuation is a recognised
 # grammatical case/title suffix (e.g. "දුටුගැමුණුගේ" must still match, since
 # that's a legitimate inflected form of "දුටුගැමුණු", not a different word).
 _SINHALA_LO, _SINHALA_HI = "඀", "෿"
@@ -311,10 +311,10 @@ def _has_clean_boundary(text: str, start: int, end: int) -> bool:
 def find_king_in_text(text: str) -> list[dict]:
     """Scan text for any king name from the master index.
 
-    Pass 1 — exact substring match against every index entry, with a
+    Pass 1 - exact substring match against every index entry, with a
              word-boundary check (see _has_clean_boundary) so a short name
              embedded inside an unrelated longer word doesn't count.
-    Pass 2 — fuzzy match (difflib.SequenceMatcher, threshold 0.85) —
+    Pass 2 - fuzzy match (difflib.SequenceMatcher, threshold 0.85) -
              only runs if Pass 1 finds nothing.
 
     Returns a list of hits sorted by position in text.
@@ -325,7 +325,7 @@ def find_king_in_text(text: str) -> list[dict]:
     index = build_king_index()
     text_nfc = unicodedata.normalize("NFC", text)
 
-    # Pass 1 — exact match, longest names first so e.g. "විජයබාහු" is not
+    # Pass 1 - exact match, longest names first so e.g. "විජයබාහු" is not
     # shadowed by a shorter name like "විජය" matching inside it.
     sorted_names = sorted((n for n in index if len(n) >= 2), key=len, reverse=True)
     covered = bytearray(len(text_nfc))
@@ -354,7 +354,7 @@ def find_king_in_text(text: str) -> list[dict]:
         hits.sort(key=lambda h: h["position"])
         return hits
 
-    # Pass 2 — fuzzy match against Sinhala word-like tokens in the text.
+    # Pass 2 - fuzzy match against Sinhala word-like tokens in the text.
     fuzzy_hits: list[dict] = []
     for m in re.finditer(r"[඀-෿]+", text_nfc):
         token = m.group()

@@ -49,7 +49,7 @@ export default function Module1CombinePage() {
         <Link href="/" className="text-sm text-indigo-400 hover:text-indigo-300">
           ← Back
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-slate-100">Module 1 — Combine with Module 2 JSON</h1>
+        <h1 className="mt-2 text-2xl font-bold text-slate-100">Module 1 - Combine with Module 2 JSON</h1>
         <p className="mt-2 text-sm text-slate-400">
           Use this when only Module 1&apos;s backend is running on this machine (Module 2 does not need to
           be up at all). Provide the raw essay again, plus the JSON you downloaded earlier from the{" "}

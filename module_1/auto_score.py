@@ -46,7 +46,7 @@ for i, essay in enumerate(essays):
     topic      = essay.get('topic', '')
 
     if len(essay_text) < 30:
-        print(f"  ⚠️  Skipping {essay_id} — too short")
+        print(f"  ⚠️  Skipping {essay_id} - too short")
         failed.append(essay_id)
         continue
 
@@ -75,7 +75,7 @@ for i, essay in enumerate(essays):
               f"{topic[:40]}...")
 
     except Exception as e:
-        print(f"  ❌ {essay_id} — Error: {e}")
+        print(f"  ❌ {essay_id} - Error: {e}")
         failed.append(essay_id)
 
 # ── Save output ───────────────────────────────

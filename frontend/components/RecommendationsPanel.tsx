@@ -2,7 +2,7 @@ import type { CombinedModule3Payload, DimensionNote, FetchState } from "@/lib/ty
 import PanelShell from "./PanelShell";
 
 /** Synthesizes plain-language, actionable recommendations from the combined
- * payload's per-dimension notes — this deliberately does NOT dump the raw
+ * payload's per-dimension notes - this deliberately does NOT dump the raw
  * JSON at the reader; it turns each dimension's how_to_improve/short_note_si
  * into a readable card, weakest area first. */
 export default function RecommendationsPanel({ state }: { state: FetchState<CombinedModule3Payload> }) {

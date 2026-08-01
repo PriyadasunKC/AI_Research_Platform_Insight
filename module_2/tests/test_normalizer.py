@@ -1,5 +1,5 @@
 """
-tests/test_normalizer.py — Unit tests for normalizer.py
+tests/test_normalizer.py - Unit tests for normalizer.py
 
 Run with:
     pytest tests/test_normalizer.py -v

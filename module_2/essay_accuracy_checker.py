@@ -1,5 +1,5 @@
 """
-essay_accuracy_checker.py — Essay Accuracy Scoring core logic (Stage 2, Module 2, 214161L)
+essay_accuracy_checker.py - Essay Accuracy Scoring core logic (Stage 2, Module 2, 214161L)
 
 Pipeline: Student essay → identify all kings mentioned → retrieve their KG
 facts (including alternate names via ALSO_KNOWN_AS) → Claude API evaluates
@@ -25,10 +25,10 @@ load_dotenv()
 CLAUDE_MODEL: str = "claude-sonnet-4-6"
 # 2048 was the original budget but proved too tight for batches where several
 # claims are INCORRECT (each adds a 2-3 sentence teacher_feedback on top of
-# explanation) — Claude would hit the ceiling mid-batch and the remaining
+# explanation) - Claude would hit the ceiling mid-batch and the remaining
 # claims fell to the truncation-recovery fallback (see call_claude_batch).
 # Raised to 4096, then to 6144 once teacher_feedback started being written
-# for CORRECT claims too (build_claude_system_prompt STEP 4) — CORRECT is
+# for CORRECT claims too (build_claude_system_prompt STEP 4) - CORRECT is
 # typically the majority verdict in a batch, so this adds a real amount of
 # extra output even though each individual note is kept to 1 sentence.
 # The truncation-recovery fallback stays in place regardless as a backstop.
@@ -48,17 +48,17 @@ _SENT_BOUNDARY_RE = re.compile(r"(?<=[.।。])\s*")
 @dataclass
 class ClaimResult:
     claim_sinhala: str          # exact sentence or phrase from essay (Sinhala essay content)
-    claim_type: str             # "FACTUAL" | "EDITORIAL" — see build_claude_system_prompt STEP 1
+    claim_type: str             # "FACTUAL" | "EDITORIAL" - see build_claude_system_prompt STEP 1
     verdict: str                # "CORRECT" | "INCORRECT" | "UNVERIFIABLE"
     unverifiable_reason: Optional[str]  # "NOT_IN_KG" | "NOT_FACTUAL" | None (set only when verdict == UNVERIFIABLE)
     matched_kg_fact: str        # the KG triple that supports or contradicts (Sinhala KG content)
     explanation: str            # Sinhala explanation sentence + English KG relation.
-                                 # Format: "KG fact N සමඟ ගැළපේ — Subject RELATION Object (period)"
-                                 # Example: "KG fact 5 සමඟ ගැළපේ — දුටුගැමුණු BUILT රුවන්වැලිසෑය (ක්‍රි.පූ. 161-137)"
+                                 # Format: "KG fact N සමඟ ගැළපේ - Subject RELATION Object (period)"
+                                 # Example: "KG fact 5 සමඟ ගැළපේ - දුටුගැමුණු BUILT රුවන්වැලිසෑය (ක්‍රි.පූ. 161-137)"
     teacher_feedback: Optional[str]  # Sinhala feedback in a history-teacher's voice, set for
                                  # both INCORRECT (corrective, 2-3 sentences: what the student
                                  # wrote, why it's wrong, the correct fact) and CORRECT (brief,
-                                 # 1-sentence affirmation) verdicts — None only for UNVERIFIABLE,
+                                 # 1-sentence affirmation) verdicts - None only for UNVERIFIABLE,
                                  # since there's nothing to affirm or correct about a claim the
                                  # KG couldn't check either way.
     batch_number: int
@@ -66,7 +66,7 @@ class ClaimResult:
 
 @dataclass
 class BatchLog:
-    """Full input/output trace for one batch call to Claude — for UI transparency."""
+    """Full input/output trace for one batch call to Claude - for UI transparency."""
     batch_number: int
     total_batches: int
     sentences: list[str]
@@ -86,7 +86,7 @@ class AccuracyResult:
     confidence_level: str               # "HIGH" | "LOW" | "INSUFFICIENT_KG"
     coverage_warning: bool              # True if coverage_ratio < 0.30
     total_claims: int                   # ALL claims, including EDITORIAL
-    total_factual_claims: int           # FACTUAL claims only — the scoring denominator
+    total_factual_claims: int           # FACTUAL claims only - the scoring denominator
     editorial_claims: int               # count of claim_type == EDITORIAL (not scored)
     correct_claims: int                 # FACTUAL + CORRECT
     incorrect_claims: int               # FACTUAL + INCORRECT
@@ -100,7 +100,7 @@ class AccuracyResult:
     batch_logs: list[BatchLog] = field(default_factory=list)
     kg_facts_text: str = ""
     combined_teacher_feedback: str = ""  # every claim's teacher_feedback (CORRECT + INCORRECT)
-                                          # joined into one Sinhala block, in claim order — see
+                                          # joined into one Sinhala block, in claim order - see
                                           # aggregate_results()
 
 
@@ -114,7 +114,7 @@ def identify_essay_subject(essay_text: str) -> tuple[str, list[str]]:
     Step 3: Also scan the FULL essay text for king names NER missed.
     Step 4: The king appearing earliest & most frequently is the primary
             subject; all others found are secondary.
-    Step 5: Verify the primary king has >=1 KG fact — otherwise fall back to
+    Step 5: Verify the primary king has >=1 KG fact - otherwise fall back to
             the next most frequent king that does have KG facts.
 
     Returns: (primary_canonical_name, [all_canonical_names_found])
@@ -205,7 +205,7 @@ Consider claims about ALL kings mentioned, not only the primary one.
 
 Your ONLY source of historical truth is the provided KG facts.
 Do NOT use your own historical knowledge to confirm or contradict any claim.
-If a fact is not in the KG, it is UNVERIFIABLE — not incorrect.
+If a fact is not in the KG, it is UNVERIFIABLE - not incorrect.
 
 ━━━ STEP 1: CLASSIFY EACH CLAIM ━━━
 
@@ -233,27 +233,27 @@ claim_type = "FACTUAL" when the sentence describes:
 
 For each FACTUAL claim:
 
-CORRECT — when the claim's CENTRAL ASSERTION matches a KG fact.
+CORRECT - when the claim's CENTRAL ASSERTION matches a KG fact.
   Key rule for compound sentences: if the main verb/event matches a KG
   fact, the verdict is CORRECT even if a secondary clause (motive, method,
   technique, superlative) is not in the KG.
-  Example: "මානසික පීඩාව නිසා මිරිසවැටිය ඉදිකළේය" — the building event
+  Example: "මානසික පීඩාව නිසා මිරිසවැටිය ඉදිකළේය" - the building event
   matches KG. The motive clause does not. Verdict = CORRECT.
   Note the uncovered secondary clause in explanation. Do not downgrade.
 
   Sinhala surface forms: a KG fact "දුටුගැමුණු RULED ශ්‍රී ලංකාව" may
   appear in the essay as "රජ කළේය", "රාජ්‍ය කළේ", "ලංකාව පාලනය කළේ",
-  "සිංහල රටේ රජු විය" — treat all as matching the same fact.
-  You are a Sinhala language expert — recognise semantic equivalence
+  "සිංහල රටේ රජු විය" - treat all as matching the same fact.
+  You are a Sinhala language expert - recognise semantic equivalence
   across surface forms.
 
-INCORRECT — ONLY when a KG fact is DIRECTLY contradicted:
+INCORRECT - ONLY when a KG fact is DIRECTLY contradicted:
   - Wrong date (essay says ක්‍රි.පූ. 200, KG says ක්‍රි.පූ. 161)
   - Wrong relationship (essay says පුත්‍රයා, KG says සොහොයුරා)
   - Wrong person (essay says රජු A built X, KG says රජු B built X)
   An unconfirmed detail is NEVER grounds for INCORRECT.
 
-UNVERIFIABLE with unverifiable_reason = "NOT_IN_KG" — when:
+UNVERIFIABLE with unverifiable_reason = "NOT_IN_KG" - when:
   - The claim is FACTUAL in type
   - No KG fact confirms or contradicts it
   - The claim is simply absent from the provided KG facts
@@ -261,12 +261,12 @@ UNVERIFIABLE with unverifiable_reason = "NOT_IN_KG" — when:
 ━━━ STEP 3: EXPLANATION FORMAT ━━━
 
 For every claim write explanation in this exact format:
-  If CORRECT: "KG fact [N] සමඟ ගැළපේ — [Subject] [RELATION] [Object] ([period])"
-  If INCORRECT: "KG fact [N] සමඟ පරස්පර — [Subject] [RELATION] [Object] ([period])"
+  If CORRECT: "KG fact [N] සමඟ ගැළපේ - [Subject] [RELATION] [Object] ([period])"
+  If INCORRECT: "KG fact [N] සමඟ පරස්පර - [Subject] [RELATION] [Object] ([period])"
   If UNVERIFIABLE NOT_IN_KG: "KG හි මෙම කරුණ නොමැත"
-  If UNVERIFIABLE NOT_FACTUAL: "මෙය සාහිත්‍යමය/සංස්කෘතික ප්‍රකාශයකි — KG සත්‍යාපනය කළ නොහැක"
+  If UNVERIFIABLE NOT_FACTUAL: "මෙය සාහිත්‍යමය/සංස්කෘතික ප්‍රකාශයකි - KG සත්‍යාපනය කළ නොහැක"
 
-Output ONLY the template text above for explanation — do not append extra
+Output ONLY the template text above for explanation - do not append extra
 reasoning, caveats, or additional sentences. Every claim in the batch must
 receive a complete response; verbose explanations are the most common
 cause of the response being cut off before all claims finish.
@@ -274,12 +274,12 @@ cause of the response being cut off before all claims finish.
 ━━━ STEP 4: TEACHER FEEDBACK FOR CORRECT AND INCORRECT CLAIMS ━━━
 
 Write a teacher_feedback field for BOTH "INCORRECT" and "CORRECT"
-verdicts (never for "UNVERIFIABLE" — set teacher_feedback = null there,
+verdicts (never for "UNVERIFIABLE" - set teacher_feedback = null there,
 since there's nothing to affirm or correct about a claim the KG couldn't
 check either way). In both cases, the voice is a kind but precise history
 teacher (ඉතිහාස ගුරුවරයෙක්).
 
-If verdict = "INCORRECT" — 2-3 sentences, corrective:
+If verdict = "INCORRECT" - 2-3 sentences, corrective:
   1. Note what the student wrote (briefly, in your own words).
   2. Explain concisely why it does not match the historical record (per KG).
   3. State the correct fact clearly, so the student learns it.
@@ -293,20 +293,20 @@ If verdict = "INCORRECT" — 2-3 sentences, corrective:
     ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනයන් නිවැරදිව සටහන් කර ගැනීම
     ඉතිහාස රචනයේදී වැදගත් වේ."
 
-If verdict = "CORRECT" — EXACTLY 1 short sentence, affirming:
+If verdict = "CORRECT" - EXACTLY 1 short sentence, affirming:
   Confirm the fact is right and, where natural, briefly say why it matters
-  or add one word of encouragement. Do NOT restate the full explanation —
+  or add one word of encouragement. Do NOT restate the full explanation -
   that's already in the explanation field; this is a short human note on
-  top of it. Keep this genuinely brief — one clause is enough.
+  top of it. Keep this genuinely brief - one clause is enough.
 
   Example:
     Essay claim: "දුටුගැමුණු රජු රුවන්වැලිසෑය ඉදිකළේය."
-    teacher_feedback: "නිවැරදියි — මෙම ඓතිහාසික කරුණ ඔබ හරියටම හඳුනාගෙන ඇත."
+    teacher_feedback: "නිවැරදියි - මෙම ඓතිහාසික කරුණ ඔබ හරියටම හඳුනාගෙන ඇත."
 
 Brevity matters here more than usual: with teacher_feedback now written
 for every CORRECT claim too (typically the majority in a batch), not just
 the few INCORRECT ones, uncontrolled length is the most likely cause of
-the response being cut off before all claims finish — keep INCORRECT
+the response being cut off before all claims finish - keep INCORRECT
 feedback to 2-3 sentences and CORRECT feedback to exactly 1, as specified
 above, no exceptions.
 
@@ -323,7 +323,7 @@ Return ONLY valid JSON. No preamble. No markdown fences. No explanation outside 
       "unverifiable_reason": "NOT_IN_KG" | "NOT_FACTUAL" | null,
       "matched_kg_fact": "<KG fact number and full text, or N/A>",
       "explanation": "<Sinhala explanation + English KG relation as specified above>",
-      "teacher_feedback": "<Sinhala feedback in a history teacher's voice — corrective (2-3 sentences) if INCORRECT, affirming (1 sentence) if CORRECT, null if UNVERIFIABLE>"
+      "teacher_feedback": "<Sinhala feedback in a history teacher's voice - corrective (2-3 sentences) if INCORRECT, affirming (1 sentence) if CORRECT, null if UNVERIFIABLE>"
     }}
   ],
   "batch_correct": <int>,
@@ -368,7 +368,7 @@ def _recover_truncated_claims(cleaned: str) -> dict | None:
 
     Walks the "claims" array with JSONDecoder.raw_decode, pulling out each
     fully-formed {...} object in turn and stopping at the first incomplete
-    one — so a batch where e.g. 5 of 6 claims finished generating returns
+    one - so a batch where e.g. 5 of 6 claims finished generating returns
     those 5 instead of failing the whole batch (see call_claude_batch,
     which pads the remainder rather than silently dropping it).
     """
@@ -391,7 +391,7 @@ def _recover_truncated_claims(cleaned: str) -> dict | None:
         try:
             obj, end = decoder.raw_decode(cleaned, pos)
         except json.JSONDecodeError:
-            break  # this object never finished generating — stop here
+            break  # this object never finished generating - stop here
         claims.append(obj)
         pos = end
 
@@ -425,7 +425,7 @@ def _unverifiable_batch(batch_sentences: list[str], batch_num: int, reason: str)
     """Fallback ClaimResults for API/parse failures.
 
     These are NOT a real Claude classification, so claim_type defaults to
-    FACTUAL (the safer assumption — never silently drop a claim from
+    FACTUAL (the safer assumption - never silently drop a claim from
     scoring because of a system failure) and unverifiable_reason is left
     None: a system failure is neither a KG coverage gap (NOT_IN_KG) nor an
     editorial-content finding (NOT_FACTUAL), so it must not be counted as
@@ -457,7 +457,7 @@ def _normalize_claim_fields(c: dict) -> tuple[str, str, Optional[str], Optional[
     for, and concluded with, "UNVERIFIABLE"). Enforcing the EDITORIAL ⇒
     UNVERIFIABLE/NOT_FACTUAL rule, clearing unverifiable_reason for
     CORRECT/INCORRECT verdicts, and clearing teacher_feedback only for
-    UNVERIFIABLE (kept for both CORRECT and INCORRECT — see build_claude_
+    UNVERIFIABLE (kept for both CORRECT and INCORRECT - see build_claude_
     system_prompt STEP 4) here guarantees these invariants hold even when
     the model's own output is inconsistent.
     """
@@ -480,12 +480,12 @@ def _normalize_claim_fields(c: dict) -> tuple[str, str, Optional[str], Optional[
     elif verdict != "UNVERIFIABLE":
         reason = None
     elif reason is None:
-        # FACTUAL + UNVERIFIABLE but Claude omitted the reason — default to
+        # FACTUAL + UNVERIFIABLE but Claude omitted the reason - default to
         # the more common case (simply absent from the KG).
         reason = "NOT_IN_KG"
 
     # teacher_feedback applies to CORRECT (affirming) and INCORRECT
-    # (corrective) claims — cleared only for UNVERIFIABLE, where there's
+    # (corrective) claims - cleared only for UNVERIFIABLE, where there's
     # nothing to affirm or correct either way.
     raw_feedback = c.get("teacher_feedback")
     teacher_feedback = str(raw_feedback).strip() if raw_feedback else None
@@ -537,7 +537,7 @@ def call_claude_batch(
         print(f"[EssayChecker] Claude client init failed: {exc}")
         if _debug is not None:
             _debug["raw_response"] = f"[client init error] {exc}"
-        return _unverifiable_batch(batch_sentences, batch_num, "Could not verify — Claude API client initialization failed.")
+        return _unverifiable_batch(batch_sentences, batch_num, "Could not verify - Claude API client initialization failed.")
 
     def _call() -> str | None:
         try:
@@ -557,7 +557,7 @@ def call_claude_batch(
     raw = _call()
     if raw is None:
         # Retry once on an API-level failure (network timeout, dropped
-        # connection) — these are usually transient, and previously any
+        # connection) - these are usually transient, and previously any
         # single timeout killed the whole batch with zero retry, unlike
         # the JSON-parse-failure path below which already retried.
         if _debug is not None:
@@ -606,7 +606,7 @@ def call_claude_batch(
 
     if len(results) < len(batch_sentences):
         # The response likely hit max_tokens before every sentence in the
-        # batch got a completed claim — _recover_truncated_claims salvages
+        # batch got a completed claim - _recover_truncated_claims salvages
         # whichever claims DID finish generating, in order. Claude processes
         # sentences in order too, so the missing ones are assumed to be the
         # tail of the batch; pad them rather than silently losing them from
@@ -650,14 +650,14 @@ def aggregate_results(
     #   coverage_warning = True when KG Coverage Ratio < 0.30.
     #
     # Confidence Level:
-    #   HIGH            — (correct + incorrect) >= 5
-    #   LOW             — (correct + incorrect) >= 1 and < 5
-    #   INSUFFICIENT_KG — (correct + incorrect) == 0
+    #   HIGH            - (correct + incorrect) >= 5
+    #   LOW             - (correct + incorrect) >= 1 and < 5
+    #   INSUFFICIENT_KG - (correct + incorrect) == 0
     #
     # Threshold justification (5 for HIGH confidence):
     #   A minimum of 5 verifiable claims is required for Factual Precision
     #   to be statistically meaningful. With fewer observations the score
-    #   is sensitive to a single claim changing verdict — e.g. 1 correct
+    #   is sensitive to a single claim changing verdict - e.g. 1 correct
     #   out of 1 gives 100% but is not informative. This threshold is
     #   consistent with minimum-sample-size practice in precision-based
     #   NLP evaluation (Manning & Schütze, 1999).
@@ -665,7 +665,7 @@ def aggregate_results(
     #   Empirical check against this system: the test run on the 5-sentence
     #   Dutugamunu essay (දුටුගැමුණු රජතුමා.txt) produced 3 verifiable
     #   factual claims (3 correct, 0 incorrect) out of 5 factual claims
-    #   total (1 sentence was classified EDITORIAL and excluded) — below
+    #   total (1 sentence was classified EDITORIAL and excluded) - below
     #   the threshold, so confidence_level was correctly LOW, not HIGH,
     #   for that essay. This is expected for a short essay; a longer or
     #   more fact-dense essay would be expected to cross the 5-claim
@@ -702,7 +702,7 @@ def aggregate_results(
     )
 
     # Every claim's individual teacher_feedback (both the 1-sentence CORRECT
-    # affirmations and the 2-3 sentence INCORRECT corrections — see
+    # affirmations and the 2-3 sentence INCORRECT corrections - see
     # build_claude_system_prompt STEP 4) joined into one Sinhala block, in
     # claim order, so a caller that wants a single piece of feedback text
     # for the whole essay (rather than iterating all_claim_results itself)
@@ -744,11 +744,11 @@ def check_essay_accuracy(
     progress_callback: Optional[Callable[[str], None]] = None,
     batch_callback: Optional[Callable[["BatchLog"], None]] = None,
 ) -> AccuracyResult:
-    """Main entry point — runs the full essay accuracy pipeline.
+    """Main entry point - runs the full essay accuracy pipeline.
 
     progress_callback(msg) fires on each pipeline stage transition.
     batch_callback(batch_log) fires immediately after each batch's Claude
-    call completes, carrying the exact input sent and response received —
+    call completes, carrying the exact input sent and response received -
     lets a caller (e.g. the Streamlit UI) show each part as it happens,
     not just the final aggregated result.
 

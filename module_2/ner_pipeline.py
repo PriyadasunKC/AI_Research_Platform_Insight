@@ -1,5 +1,5 @@
 """
-ner_pipeline.py — XLM-RoBERTa NER model inference
+ner_pipeline.py - XLM-RoBERTa NER model inference
 
 Loads the trained XLM-RoBERTa NER model from a local directory and runs
 inference on a Sinhala sentence.
@@ -8,16 +8,16 @@ Returns: list of (entity_span, label) tuples
     e.g. [("දුටුගැමුණු", "PERSON_KING"), ("රුවන්වැලිසෑය", "MONUMENT")]
 
 NER Classes (10):
-    PERSON_KING   — kings and rulers
-    PERSON_MONK   — monks and clergy
-    PERSON_OTHER  — other named persons
-    LOCATION      — geographical places
-    MONUMENT      — temples, stupas, buildings
-    DYNASTY       — royal dynasties and lineages
-    BATTLE_EVENT  — battles and military events
-    DATE_ERA      — date / era / time period
-    CHRONICLE     — text chronicles (e.g. Mahawamsa)
-    RELIC         — sacred relics
+    PERSON_KING   - kings and rulers
+    PERSON_MONK   - monks and clergy
+    PERSON_OTHER  - other named persons
+    LOCATION      - geographical places
+    MONUMENT      - temples, stupas, buildings
+    DYNASTY       - royal dynasties and lineages
+    BATTLE_EVENT  - battles and military events
+    DATE_ERA      - date / era / time period
+    CHRONICLE     - text chronicles (e.g. Mahawamsa)
+    RELIC         - sacred relics
     
 """
 
@@ -50,12 +50,12 @@ DEVICE: int = 0 if torch.cuda.is_available() else -1   # 0 = first GPU, -1 = CPU
 class NERTag(NamedTuple):
     """A single named-entity tag as returned by the NER model."""
     entity: str        # surface form of the entity span (Sinhala text)
-    label:  str        # NER class (PERSON_KING, MONUMENT, etc.) — no B-/I- prefix
+    label:  str        # NER class (PERSON_KING, MONUMENT, etc.) - no B-/I- prefix
     start:  int = 0   # character offset in original sentence
     end:    int = 0   # character offset end in original sentence
 
 
-# MODEL LOADING  (cached — loads once on first call)
+# MODEL LOADING  (cached - loads once on first call)
 
 _ner_pipeline: TokenClassificationPipeline | None = None
 
@@ -129,7 +129,7 @@ def run_ner(sentence: str) -> list[NERTag]:
         sentence: Raw Sinhala text string.
 
     Returns:
-        List of NERTag(entity, label) — one entry per detected entity span.
+        List of NERTag(entity, label) - one entry per detected entity span.
         DATE_ERA entries ARE included (needed by relation extractor for
         the `period` field, even though they cannot be triple subjects/objects).
 

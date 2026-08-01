@@ -1,11 +1,11 @@
 """
-relation_extractor.py — Universal LLM relation extraction
+relation_extractor.py - Universal LLM relation extraction
 
 Supported providers (all use the same prompt & validator):
   - OpenAI          (gpt-4o-mini, gpt-4o, …)
-  - DeepSeek        (deepseek-chat)          — OpenAI-compatible endpoint
-  - Google Gemini   (gemini-2.0-flash, …)    — OpenAI-compatible endpoint
-  - Anthropic Claude(claude-haiku-4-5, …)    — Anthropic SDK
+  - DeepSeek        (deepseek-chat)          - OpenAI-compatible endpoint
+  - Google Gemini   (gemini-2.0-flash, …)    - OpenAI-compatible endpoint
+  - Anthropic Claude(claude-haiku-4-5, …)    - Anthropic SDK
 
 Swapping to SinLLaMA (Module 3):
   Replace _call_llm() with a call to the vLLM endpoint.
@@ -26,10 +26,10 @@ import kg_aliases
 
 load_dotenv()
 
-# CONFIG — all read from .env
+# CONFIG - all read from .env
 
 TEMPERATURE: float = 0.0
-MAX_TOKENS:  int   = 2048   # Sinhala Unicode uses ~3-4 tokens/char — 512 was too small
+MAX_TOKENS:  int   = 2048   # Sinhala Unicode uses ~3-4 tokens/char - 512 was too small
 
 # Active provider + model (set LLM_PROVIDER / LLM_MODEL in .env)
 _ENV_PROVIDER: str = os.environ.get("LLM_PROVIDER", "OpenAI")
@@ -87,8 +87,8 @@ _SYSTEM_PROMPT = """\
 ━━━ PRIMARY DIRECTIVE ━━━
 
 ඔබට input දෙකක් ලැබේ:
-  1. RAW SINHALA TEXT — ඔබේ primary truth source. සිංහල expert ලෙස ගැඹුරින් කියවා සියලු relationships extract කරන්න.
-  2. NER TAGS — candidate entity reference පමණයි. NER tags inaccurate නම් RAW TEXT ගෙන් correct entities use කරන්න.
+  1. RAW SINHALA TEXT - ඔබේ primary truth source. සිංහල expert ලෙස ගැඹුරින් කියවා සියලු relationships extract කරන්න.
+  2. NER TAGS - candidate entity reference පමණයි. NER tags inaccurate නම් RAW TEXT ගෙන් correct entities use කරන්න.
 
 RAW TEXT = ground truth. NER tags ≠ ground truth.
 NER tags හරිනම් use කරන්න. NER tags ගැලවී ඇත්නම් raw text bare entity name use කරන්න.
@@ -123,7 +123,7 @@ FAMILY / පවුල:
 "ගේ පිය" (step context) → STEP_FATHER_OF
 "විවාහ" / "බිරිඳ" / "සරණ පාවා" → MARRIED
 "ගේ බිරිඳ" / "ගේ භාර්යාව" / "ගේ බිසව" → WIFE_OF
-"ගේ ඥාති" / "ගේ ඤාති" → general family — use most specific applicable relation
+"ගේ ඥාති" / "ගේ ඤාති" → general family - use most specific applicable relation
 
 WAR / යුද්ධ:
 "පරාජය කළ" / "හෙළ කළ" / "ජය ගත්" / "ජය ලැබීය" → DEFEATED
@@ -214,14 +214,14 @@ SPECIAL:
 
 6. ALSO_KNOWN_AS: text says "X ලෙසද හැඳින්වේ" or "X නමින්ද" → extract alias triple.
 
-7. SAME NAME, DIFFERENT PERSON — DISAMBIGUATION:
+7. SAME NAME, DIFFERENT PERSON - DISAMBIGUATION:
    Raw text තුළ එකම නම (e.g. "මානාභරණ") විවිධ යුගවල/විවිධ පුද්ගලයන් සඳහා
    යොදා ඇති බව context එකෙන් පැහැදිලි නම් (වෙනස් යුගය, වෙනස් title, "රුහුණේ"/
    "දෙවන"/"දක්ඛිණ දේශයේ" වැනි පැහැදිලි epithet එකක්), එම epithet එක bare
    නමට එකතු කර සම්පූර්ණ compound එකම එක entity name එකක් ලෙස
-   subject/object සකසන්න — bare නම පමණක් extract නොකරන්න.
+   subject/object සකසන්න - bare නම පමණක් extract නොකරන්න.
      WRONG: "මානාභරණ" (රුහුණේ සහ දක්ඛිණ දේශයේ දෙදෙනාම එකම node බවට පත් වේ)
-     RIGHT: "රුහුණේ මානාභරණ" vs "දක්ඛිණ දේශයේ මානාභරණ" — වෙනස් entities දෙකක්
+     RIGHT: "රුහුණේ මානාභරණ" vs "දක්ඛිණ දේශයේ මානාභරණ" - වෙනස් entities දෙකක්
    මෙය අත්‍යවශ්‍යයි: disambiguating epithet එක නැතිව bare නම පමණක් extract
    කළහොත් graph එකේ වෙනස් පුද්ගලයන් දෙදෙනෙකු එකම node එකක් බවට silently
    merge වේ.
@@ -229,7 +229,7 @@ SPECIAL:
 ━━━ NO ABSTRACT NODES RULE ━━━
 
 සරල fact එකක් සඳහා (එක් actor කෙනෙක්, එක් action එකක්) අතරමැදි event-noun
-node එකක් හරහා route නොකරන්න — සෘජුවම subject→relation→object ලෙස extract
+node එකක් හරහා route නොකරන්න - සෘජුවම subject→relation→object ලෙස extract
 කරන්න.
   WRONG: (රජු) → PERFORMED → (ඉදිකිරීම් සිද්ධිය) → INVOLVED → (රුවන්වැලිසෑය)
   RIGHT: (රජු) → BUILT → (රුවන්වැලිසෑය)
@@ -242,7 +242,7 @@ node එකක් හරහා route නොකරන්න — සෘජුව�
 
 Raw text හි entity නාමයකට පෙර ordinal prefix ඇත්නම් (I වන, II වන,
 III වන, IV වන, V වන, VI වන, VII වන, VIII වන, IX වන, X වන,
-පළමු, දෙවන, තෙවන, හතරවන, etc.) — එම prefix සහිතව FULL NAME use කරන්න.
+පළමු, දෙවන, තෙවන, හතරවන, etc.) - එම prefix සහිතව FULL NAME use කරන්න.
 
 NER tag "කාශ්‍යප" ලෙස දී ඇතත්, raw text "I වන කාශ්‍යප" නම්
 → subject/object = "I වන කාශ්‍යප" (not "කාශ්‍යප")
@@ -284,7 +284,7 @@ generic relation එකක් නිර්මාණය නොකර, action + ta
   RIGHT: subject=X, relation=ENCOURAGED_TO_ADOPT_HINDU_DHAMMA, object=රජු
 (Example 21-22 බලන්න.)
 
-CANONICAL VERB PREFERENCE TABLE — මෙම relation list එකේ ඇති relation එකක්
+CANONICAL VERB PREFERENCE TABLE - මෙම relation list එකේ ඇති relation එකක්
 අදාළ නම් එයම භාවිත කරන්න, synonym අලුතින් නොනිර්මාණය කරන්න:
   රාජ්‍ය කිරීම           → RULED       (not GOVERNED / ADMINISTERED)
   සන්ධානය/ගිවිසුම බිඳ දැමීම → BROKE       (not DAMAGED / VIOLATED)
@@ -295,13 +295,13 @@ List එකේ නොමැති සන්දර්භයකදී පමණක
 DEDUPLICATION AWARENESS:
 මූලාශ්‍ර පෙළ බොහෝවිට එකම fact එක "ලැයිස්තුවක්" කොටසකද, පසුව එන narrative
 "හැඳින්වීම" කොටසකද යන දෙකෙහිම repeat කරයි. එවැනි විටෙක fact එක වඩාත්
-සවිස්තර/නිශ්චිත ස්වරූපයෙන් එක් වරක් පමණක් extract කරන්න — එකම
+සවිස්තර/නිශ්චිත ස්වරූපයෙන් එක් වරක් පමණක් extract කරන්න - එකම
 sentence-batch call එකක් තුළදී එකම triple එක verbatim දෙවරක් output
 නොකරන්න. (Neo4j load stage එකේදී MERGE මගින් duplicates handle වන බැවින්,
 සැක සහිත විටෙක completeness එක aggressive dedup එකට වඩා prioritize කරන්න.)
 
 ━━━ NEO4J COMPLETE RELATION REFERENCE LIST ━━━
-(ඔබේ KG හි ඇති ALL relations — consistency සඳහා prefer කරන්න)
+(ඔබේ KG හි ඇති ALL relations - consistency සඳහා prefer කරන්න)
 
 ALSO_KNOWN_AS, ARRIVED_AT, ASSOCIATED_AT_CHILDHOOD_WITH, ATTEMPTED_MURDER_OF,
 AUNT_OF, BECOME_FRIENDLY_LATER_WITH, BELONGS_TO, BIASED_TOWARDS, BIGGER_THAN,
@@ -340,16 +340,16 @@ flag කරන්නේ නම් (හඳුනාගන්න: "ජනප්‍
 "සිතිය හැක්කේ", "විවිධ මත පවතී", "අනුමාන කළ හැකිය", "...විය හැක",
 "...ඇතැයි සිතේ"), එය කිසිවිටෙක plain factual triple එකක් ලෙස extract
 නොකරන්න. දෙකකින් එකක් කරන්න:
-  (a) queryable අගයක් නොදෙන්නේ නම් — සම්පූර්ණයෙන්ම SKIP කරන්න (empty array
+  (a) queryable අගයක් නොදෙන්නේ නම් - සම්පූර්ණයෙන්ම SKIP කරන්න (empty array
       එකට contribute කරන්න), හෝ
   (b) නම් කළ source එකම subject කර STATES relation එකෙන් attribute කරන්න:
-      "(චූලවංශය) STATES (X)" — bare fact එකක් ලෙස නොව source-qualified
+      "(චූලවංශය) STATES (X)" - bare fact එකක් ලෙස නොව source-qualified
       claim එකක් ලෙස.
-(Example 24 — skip; Example 23 — STATES.)
+(Example 24 - skip; Example 23 - STATES.)
 
 මූලාශ්‍රය තුළම දින/මරණ හේතුව/උරුමය පිළිබඳ විස්තර නම් කළ මූලාශ්‍ර දෙක අතර
 DISPUTED නම් (එකකට වඩා විවිධ අගයන් දෙනු ලැබේ නම්), එකක් නිශ්චිතව තෝරා
-silent ලෙස ඉදිරිපත් නොකර, TWO triples extract කරන්න — එක් එක් source එකම
+silent ලෙස ඉදිරිපත් නොකර, TWO triples extract කරන්න - එක් එක් source එකම
 subject කර STATES relation එකෙන්, disputed අගය period field එකේ තබා
 (Example 23 බලන්න).
 
@@ -366,151 +366,151 @@ connect කිරීමට prefer කරන්න (Example 26 බලන්න).
 
 [
   {
-    "subject":  "<bare entity — case endings stripped>",
+    "subject":  "<bare entity - case endings stripped>",
     "relation": "<UPPER_SNAKE_CASE>",
-    "object":   "<bare entity — case endings stripped>",
+    "object":   "<bare entity - case endings stripped>",
     "period":   "<DATE_ERA string if present, else null>"
   }
 ]
 
 ━━━ FEW-SHOT EXAMPLES (full range of text types) ━━━
 
-Example 1 — RULED + period (basic):
+Example 1 - RULED + period (basic):
 RAW: පණ්ඩුකාභය රජු ක්‍රි.පූ. 437 සිට 367 දක්වා ලංකාව පාලනය කළේය.
 NER: [PERSON_KING] පණ්ඩුකාභය, [DATE_ERA] ක්‍රි.පූ. 437 සිට 367, [LOCATION] ලංකාව
 OUTPUT: [{"subject":"පණ්ඩුකාභය","relation":"RULED","object":"ලංකාව","period":"ක්‍රි.පූ. 437 සිට 367"}]
 
-Example 2 — BUILT (passive → active):
+Example 2 - BUILT (passive → active):
 RAW: රුවන්වැලිසෑය දුටුගැමුණු රජු විසින් ඉදිකරන ලදී.
 NER: [PERSON_KING] දුටුගැමුණු, [MONUMENT] රුවන්වැලිසෑය
 OUTPUT: [{"subject":"දුටුගැමුණු","relation":"BUILT","object":"රුවන්වැලිසෑය","period":null}]
 
-Example 3 — SON_OF + RULED (multiple relations):
+Example 3 - SON_OF + RULED (multiple relations):
 RAW: මහාසිව රජු මුටසිව රජුගේ පුත්‍රයෙකු වූ අතර ක්‍රිපූ 257 සිට 247 දක්වා අනුරාධපුරය පාලනය කළේය.
 NER: [PERSON_KING] මහාසිව, [PERSON_KING] මුටසිව, [DATE_ERA] ක්‍රිපූ 257 සිට 247, [LOCATION] අනුරාධපුරය
 OUTPUT: [{"subject":"මහාසිව","relation":"SON_OF","object":"මුටසිව","period":null},{"subject":"මහාසිව","relation":"RULED","object":"අනුරාධපුරය","period":"ක්‍රිපූ 257 සිට 247"}]
 
-Example 4 — KILLED (passive rewrite):
+Example 4 - KILLED (passive rewrite):
 RAW: ක්‍රිපූ 205 දී එළාර ආක්‍රමණිකයා විසින් අසේල රජු මරා දැමිය.
 NER: [PERSON_KING] එළාර, [PERSON_KING] අසේල, [DATE_ERA] ක්‍රිපූ 205
 OUTPUT: [{"subject":"එළාර","relation":"KILLED","object":"අසේල","period":"ක්‍රිපූ 205"}]
 
-Example 5 — ALSO_KNOWN_AS (alias extraction):
+Example 5 - ALSO_KNOWN_AS (alias extraction):
 RAW: මහ කළු සිංහයා, වට්ටගාමිණී අභය සහ වළගම්බාහු ලෙසද හැඳින්වෙන වළගම්බා රජු.
 NER: [PERSON_KING] වළගම්බා
 OUTPUT: [{"subject":"වළගම්බා","relation":"ALSO_KNOWN_AS","object":"වට්ටගාමිණී අභය","period":null},{"subject":"වළගම්බා","relation":"ALSO_KNOWN_AS","object":"වළගම්බාහු","period":null}]
 
-Example 6 — CONVERTED_TO_BUDDHIST:
+Example 6 - CONVERTED_TO_BUDDHIST:
 RAW: මිහිඳු හිමියන් ධර්ම දේශනා කළ අතර, ඉන් අනතුරුව දේවානම්පිය තිස්ස රජතුමා බුදු දහම වැළඳ ගත්තේය.
 NER: [PERSON_MONK] මිහිඳු හිමි, [PERSON_KING] දේවානම්පිය තිස්ස
 OUTPUT: [{"subject":"මිහිඳු හිමි","relation":"CONVERTED_TO_BUDDHIST","object":"දේවානම්පිය තිස්ස","period":null}]
 
-Example 7 — MARRIED + EXPELLED (sequence):
+Example 7 - MARRIED + EXPELLED (sequence):
 RAW: විජය රජු කුවේනිය සමඟ විවාහ වූ අතර, පසුව ඔහු කුවේනිය නෙරපා හැරියේය.
 NER: [PERSON_KING] විජය, [PERSON_OTHER] කුවේනිය
 OUTPUT: [{"subject":"විජය","relation":"MARRIED","object":"කුවේනිය","period":null},{"subject":"විජය","relation":"EXPELLED","object":"කුවේනිය","period":null}]
 
-Example 8 — FLED_TO + RECAPTURED:
+Example 8 - FLED_TO + RECAPTURED:
 RAW: කොළඹලකදී සටනේදී පරාජයට පත් වූ වළගම්බා රජුට පලා යාමට සිදු විය. ක්‍රි.පූ. 89 දී ඔහු ආක්‍රමණිකයන් පරාජය කර අනුරාධපුරය නැවත අත්පත් කර ගත්තේය.
 NER: [PERSON_KING] වළගම්බා, [LOCATION] කොළඹල, [DATE_ERA] ක්‍රි.පූ. 89, [LOCATION] අනුරාධපුරය
 OUTPUT: [{"subject":"වළගම්බා","relation":"FLED_TO","object":"කොළඹල","period":null},{"subject":"වළගම්බා","relation":"DEFEATED","object":"ආක්‍රමණිකයන්","period":"ක්‍රි.පූ. 89"},{"subject":"වළගම්බා","relation":"RECAPTURED","object":"අනුරාධපුරය","period":"ක්‍රි.පූ. 89"}]
 
-Example 9 — NER missed entity; use raw text:
+Example 9 - NER missed entity; use raw text:
 RAW: විජය ඇතුළු පිරිසෙන් සිංහල ජාතිය බිහිවිණි.
 NER: [PERSON_KING] විජය
 OUTPUT: [{"subject":"විජය","relation":"FOUNDED","object":"සිංහල ජාතිය","period":null}]
 
-Example 10 — SUCCEEDED_BY:
+Example 10 - SUCCEEDED_BY:
 RAW: විජයගේ මරණයෙන් හිස් වූ සිහසුනට පණ්ඩුවාසුදේව කුමරු පත් වූයේය.
 NER: [PERSON_KING] විජය, [PERSON_KING] පණ්ඩුවාසුදේව
 OUTPUT: [{"subject":"විජය","relation":"SUCCEEDED_BY","object":"පණ්ඩුවාසුදේව","period":null}]
 
-Example 11 — BELONGS_TO (dynasty):
+Example 11 - BELONGS_TO (dynasty):
 RAW: ධාතුසේන රජු මෞර්ය රාජ වංශයට අයත් රජ කෙනෙකි.
 NER: [PERSON_KING] ধাতুসේන රජු, [DYNASTY] මෞර්ය රාජ වංශය
 OUTPUT: [{"subject":"ධාතුසේන රජු","relation":"BELONGS_TO","object":"මෞර්ය රාජ වංශය","period":null}]
 
-Example 12 — THREAT_TO + DEFEATED:
+Example 12 - THREAT_TO + DEFEATED:
 RAW: ද්‍රවිඩ ආක්‍රමණිකයන් රාජධානියට තර්ජනය කළ අතර, ධාතුසේන රජු ඔවුන් පරාජය කර රට එක්සත් කළේය.
 NER: [PERSON_KING] ධාතුසේන රජු, [PERSON_OTHER] ද්‍රවිඩ ආක්‍රමණිකයන්
 OUTPUT: [{"subject":"ද්‍රවිඩ ආක්‍රමණිකයන්","relation":"THREAT_TO","object":"රාජධානිය","period":null},{"subject":"ධාතුසේන රජු","relation":"DEFEATED","object":"ද්‍රවිඩ ආක්‍රමණිකයන්","period":null},{"subject":"ධාතුසේන රජු","relation":"UNITED","object":"ශ්‍රී ලංකාව","period":null}]
 
-Example 13 — WIFE_OF + SON_OF chain:
+Example 13 - WIFE_OF + SON_OF chain:
 RAW: වළගම්බා රජුගේ අගමෙහෙසිය සෝමා දේවිය වූ අතර, පුතා මහානාග කුමාරයා විය.
 NER: [PERSON_KING] වළගම්බා, [PERSON_OTHER] සෝමා දේවිය, [PERSON_OTHER] මහානාග
 OUTPUT: [{"subject":"සෝමා දේවිය","relation":"WIFE_OF","object":"වළගම්බා","period":null},{"subject":"මහානාග","relation":"SON_OF","object":"වළගම්බා","period":null}]
 
-Example 14 — WROTE:
+Example 14 - WROTE:
 RAW: බුද්ධදාස රජු වෛද්‍ය විද්‍යාව පිළිබඳ ග්‍රන්ථ රැසක් රචනා කළේය.
 NER: [PERSON_KING] බුද්ධදාස රජු, [ARTIFACT] වෛද්‍ය ග්‍රන්ථ
 OUTPUT: [{"subject":"බුද්ධදාස රජු","relation":"WROTE","object":"වෛද්‍ය ග්‍රන්ථ","period":null}]
 
-Example 15 — RENOVATED + REBUILT:
+Example 15 - RENOVATED + REBUILT:
 RAW: සිරිමේඝවණ්ණ රජු, මහාසෙන් රජු විසින් විනාශ කරන ලද මහාවිහාරය සහ ලෝවාමහාපාය නැවත ප්‍රතිසංස්කරණය කිරීමට කටයුතු කළේය.
 NER: [PERSON_KING] සිරිමේඝවණ්ණ, [MONUMENT] මහාවිහාරය, [MONUMENT] ලෝවාමහාපාය
 OUTPUT: [{"subject":"සිරිමේඝවණ්ණ","relation":"RENOVATED","object":"මහාවිහාරය","period":null},{"subject":"සිරිමේඝවණ්ණ","relation":"RENOVATED","object":"ලෝවාමහාපාය","period":null}]
 
-Example 16 — REBELLED_AGAINST + KILLED:
+Example 16 - REBELLED_AGAINST + KILLED:
 RAW: සේන සහ ගුත්තික, සූරතිස්ස රජු මරා දමා සිහසුන පැහැර ගත්හ.
 NER: [PERSON_OTHER] සේන, [PERSON_OTHER] ගුත්තික, [PERSON_KING] සූරතිස්ස
 OUTPUT: [{"subject":"සේන","relation":"KILLED","object":"සූරතිස්ස","period":null},{"subject":"ගුත්තික","relation":"KILLED","object":"සූරතිස්ස","period":null}]
 
-Example 17 — INTRODUCED (Buddhism):
+Example 17 - INTRODUCED (Buddhism):
 RAW: මිහිඳු හිමියන් ශ්‍රී ලංකාවට පැමිණ ලක්වැසියන් බුද්ධාගමට හරවා ගත්හ.
 NER: [PERSON_MONK] මිහිඳු හිමි, [LOCATION] ශ්‍රී ලංකාව
 OUTPUT: [{"subject":"මිහිඳු හිමි","relation":"ARRIVED_AT","object":"ශ්‍රී ලංකාව","period":null},{"subject":"මිහිඳු හිමි","relation":"INTRODUCED","object":"බුද්ධාගම","period":null}]
 
-Example 18 — TEACHER_OF:
+Example 18 - TEACHER_OF:
 RAW: පණ්ඩුල බමුණා කුමරුට ශිල්ප ශාස්ත්‍ර ඉගැන්වීය.
 NER: [PERSON_OTHER] පණ්ඩුල, [PERSON_OTHER] පණ්ඩුකාභය
 OUTPUT: [{"subject":"පණ්ඩුල","relation":"TEACHER_OF","object":"පණ්ඩුකාභය","period":null}]
 
-Example 19 — DEPOSED_FROM_THRONE_BY:
+Example 19 - DEPOSED_FROM_THRONE_BY:
 RAW: කාශ්‍යප කුමරු ධාතුසේන රජු සිහසුනෙන් නෙරපා හැර රාජ්‍ය පවරා ගත්තේය.
 NER: [PERSON_KING] කාශ්‍යප, [PERSON_KING] ධාතුසේන රජු
 OUTPUT: [{"subject":"ධාතුසේන රජු","relation":"DEPOSED_FROM_THRONE_BY","object":"කාශ්‍යප","period":null}]
 
-Example 20 — CONSPIRED_TO_KILL + complex politics:
+Example 20 - CONSPIRED_TO_KILL + complex politics:
 RAW: සපුමල් කුමරු කෝට්ටේ රාජධානියට පැමිණ, දෙවන ජයබාහු රජු ඝාතනය කර සිහසුනට පත් විය.
 NER: [PERSON_KING] සපුමල් කුමරු, [PERSON_KING] දෙවන ජයබාහු
 OUTPUT: [{"subject":"සපුමල් කුමරු","relation":"KILLED","object":"දෙවන ජයබාහු","period":null}]
 
-Example 21 — Folded relation (encourage-to-adopt pattern):
+Example 21 - Folded relation (encourage-to-adopt pattern):
 RAW: ඇමතිවරයා රාජසිංහ රජුට හින්දු ධර්මය වැලඳ ගැනීමට උනන්දු කරවීය.
 NER: [PERSON_OTHER] ඇමතිවරයා, [PERSON_KING] රාජසිංහ
 OUTPUT: [{"subject":"ඇමතිවරයා","relation":"ENCOURAGED_TO_ADOPT_HINDU_DHAMMA","object":"රාජසිංහ","period":null}]
 
-Example 22 — Folded relation (advised-to-attack pattern):
+Example 22 - Folded relation (advised-to-attack pattern):
 RAW: ඇමතිවරයා කාශ්‍යප රජුට බෞද්ධ ස්ථාන වලට ප්‍රහාර කිරීමට උපදෙස් දුන්නේය.
 NER: [PERSON_OTHER] ඇමතිවරයා, [PERSON_KING] කාශ්‍යප
 OUTPUT: [{"subject":"ඇමතිවරයා","relation":"ADVISED_TO_ATTACK_BUDDHIST_SITES","object":"කාශ්‍යප","period":null}]
 
-Example 23 — Disputed date across two chronicles (dual STATES):
+Example 23 - Disputed date across two chronicles (dual STATES):
 RAW: චූලවංශය අනුව මාගම මහානාග රජු ක්‍රි.ව. 1215 දී මිය ගියේය, නමුත් රාජාවලිය පවසන්නේ ක්‍රි.ව. 1212 බවයි.
 NER: [CHRONICLE] චූලවංශය, [CHRONICLE] රාජාවලිය, [PERSON_KING] මාගම මහානාග, [DATE_ERA] ක්‍රි.ව. 1215, [DATE_ERA] ක්‍රි.ව. 1212
 OUTPUT: [{"subject":"චූලවංශය","relation":"STATES","object":"මාගම මහානාග","period":"ක්‍රි.ව. 1215 මරණය"},{"subject":"රාජාවලිය","relation":"STATES","object":"මාගම මහානාග","period":"ක්‍රි.ව. 1212 මරණය"}]
 
-Example 24 — Speculative/legendary claim, no queryable value → skip entirely:
+Example 24 - Speculative/legendary claim, no queryable value → skip entirely:
 RAW: ජනප්‍රවාදවලට අනුව රජු අහසින් වැටුණු කැලයක් තුළින් උපත ලැබූ බව සිතිය හැක.
 NER: [PERSON_KING] රජු
 OUTPUT: []
 
-Example 25 — Same-name disambiguation (epithet preserved, not stripped):
+Example 25 - Same-name disambiguation (epithet preserved, not stripped):
 RAW: රුහුණේ මානාභරණ රජු, දක්ඛිණ දේශයේ උපරජ වූ තවත් මානාභරණ කෙනෙකුගෙන් වෙනස් පුද්ගලයෙකි. රුහුණේ මානාභරණ රජු ක්‍රි.ව. 1187 දී රුහුණ රාජ්‍ය කළේය.
 NER: [PERSON_KING] මානාභරණ, [DATE_ERA] ක්‍රි.ව. 1187
 OUTPUT: [{"subject":"රුහුණේ මානාභරණ","relation":"RULED","object":"රුහුණ","period":"ක්‍රි.ව. 1187"}]
 
-Example 26 — Chronicle attribution (named source for a notable claim):
+Example 26 - Chronicle attribution (named source for a notable claim):
 RAW: ඉන්ද්‍රකීර්ති සිරිවීර මහතාගේ පර්යේෂණ අනුව, දෙවන ජයබාහු ඝාතනය කිරීමේ කුමන්ත්‍රණය පිළිබඳ ප්‍රධාන මූලාශ්‍රය චූලවංශයයි.
 NER: [PERSON_OTHER] ඉන්ද්‍රකීර්ති සිරිවීර, [CHRONICLE] චූලවංශය, [PERSON_KING] දෙවන ජයබාහු
 OUTPUT: [{"subject":"චූලවංශය","relation":"IS_PRIMARY_SOURCE_FOR","object":"දෙවන ජයබාහුගේ ඝාතනය","period":null}]
 
 ━━━ STRICT OUTPUT RULES ━━━
 
-• JSON array ONLY — no explanation, no markdown fences, no preamble
+• JSON array ONLY - no explanation, no markdown fences, no preamble
 • Valid triple නොමැත්නම් → exactly []
-• period field: DATE_ERA string හෝ null — NEVER empty string ""
-• Sentence හි ඇති ALL valid relationships extract කරන්න — first triple දී නොනවතින්න
+• period field: DATE_ERA string හෝ null - NEVER empty string ""
+• Sentence හි ඇති ALL valid relationships extract කරන්න - first triple දී නොනවතින්න
 • Subject ≠ Object (same entity triples NEVER)
 • Speculative/legendary ලෙස flag කළ content කිසි විටෙක bare fact ලෙස extract නොකරන්න (SPECULATION RULE බලන්න)
 
@@ -636,11 +636,11 @@ def _parse_response(raw: str) -> list[dict]:
 
 # Sinhala grammatical case suffixes that the NER model sometimes leaves attached.
 # Ordered longest-first so "ෙකු" is tried before "ු" would hypothetically be.
-# "ව" (accusative) intentionally omitted — it is the base form of many words.
+# "ව" (accusative) intentionally omitted - it is the base form of many words.
 # "ගේ"/"ෙහි" handled by normalizer.py _TITLE_SUFFIXES but only for alias-map hits;
 # we add them here too so they strip unconditionally for any entity name.
 _SINHALA_CASE_SUFFIXES: tuple[str, ...] = (
-    "ෙකු",  # dative (human classifier): "කෙනෙකු" — strip only if stem ≥ 2
+    "ෙකු",  # dative (human classifier): "කෙනෙකු" - strip only if stem ≥ 2
     "ෙන්",  # ablative/instrumental: "ලංකාවෙන්" → "ලංකාව"
     "ෙහි",  # locative formal: "රාජ්‍යයෙහි" → "රාජ්‍යය"
     "ේදී",  # locative+particle "at": "විහාරයේදී" → "විහාරය"
@@ -680,8 +680,8 @@ def _resolve_ner_entity(candidate: str, entity_set: set[str]) -> str | None:
     5. Descriptive prefix: LLM prepended a RELATIONAL clause before the real entity.
        e.g. "වළගම්බා රජුගේ පිය සද්ධාතිස්ස" → entity "සද්ධාතිස්ස" is at the END.
        Restricted to prefixes containing a relational marker (ගේ/ගෙන්/විසින්/
-       යටතේ) so a legitimate disambiguating epithet — e.g. "රුහුණේ මානාභරණ",
-       used to distinguish two different same-named kings — is NOT collapsed
+       යටතේ) so a legitimate disambiguating epithet - e.g. "රුහුණේ මානාභරණ",
+       used to distinguish two different same-named kings - is NOT collapsed
        down to the bare, ambiguous name. See _SYSTEM_PROMPT's entity
        disambiguation rule, which deliberately asks the LLM to produce such
        compounds; without this restriction they would be silently destroyed
@@ -705,11 +705,11 @@ def _resolve_ner_entity(candidate: str, entity_set: set[str]) -> str | None:
     norm_matches = [e for e in entity_set if normalize_entity(e) == cand_norm]
     if norm_matches:
         return max(norm_matches, key=len)
-    # Case 5: LLM prepended a RELATIONAL clause — real entity is at the END.
+    # Case 5: LLM prepended a RELATIONAL clause - real entity is at the END.
     # e.g. "කාවන්තිස්සගේ පුත් සද්ධාතිස්ස" → "සද්ධාතිස්ස" (prefix has "ගේ").
     # Only fires if the stripped-off prefix contains a relational marker, so
     # a plain disambiguating epithet like "රුහුණේ" in "රුහුණේ මානාභරණ" is left
-    # untouched — that candidate falls through to None and is accepted as-is
+    # untouched - that candidate falls through to None and is accepted as-is
     # by the caller's fallback (see _validate_one_triple._resolve_or_fallback).
     suffix_end_matches = [
         e for e in entity_set
@@ -755,7 +755,7 @@ def _validate_one_triple(
         resolved = _resolve_ner_entity(candidate, non_date_raw)
         if resolved is not None:
             return resolved
-        # NER missed this entity — accept the LLM string directly if it looks
+        # NER missed this entity - accept the LLM string directly if it looks
         # like a real entity name (at least 2 chars, non-empty after strip).
         if len(candidate) >= 2:
             return candidate
@@ -812,7 +812,7 @@ def extract_relations(
     """
     Extract and validate triples for one Sinhala sentence.
 
-    provider / api_key / model are optional — when omitted the function reads
+    provider / api_key / model are optional - when omitted the function reads
     LLM_PROVIDER / LLM_MODEL and the matching *_API_KEY from .env.
 
     Pass a dict as _debug to capture raw LLM response and parsed triples:

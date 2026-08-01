@@ -6,7 +6,7 @@ All paths, constants, and Sinhala language resources live here.
 
 Works on:
   - Windows local (VS Code)       : paths resolve from this file's location
-  - Google Colab (Drive mounted)  : same — BASE_DIR auto-detected
+  - Google Colab (Drive mounted)  : same - BASE_DIR auto-detected
 
 DO NOT hardcode any paths. Always use the variables defined here.
 """
@@ -15,13 +15,13 @@ import os
 
 from dotenv import load_dotenv
 
-# Loads .env into os.environ (e.g. HF_TOKEN for downloading SinBERT-large —
-# see utils/sinbert_embedder.py — and the MODULE2_*/MONGO_* overrides below).
+# Loads .env into os.environ (e.g. HF_TOKEN for downloading SinBERT-large -
+# see utils/sinbert_embedder.py - and the MODULE2_*/MONGO_* overrides below).
 # Must run before any os.environ.get() calls in this file or importers of it.
 load_dotenv()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Project root — auto-detected from this file's location
+# Project root - auto-detected from this file's location
 # Works on Windows, Mac, Linux, and Google Colab
 # ─────────────────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +62,7 @@ FLASK_PORT  = 5000
 FLASK_DEBUG = True
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Module 2 integration — historical-accuracy dimension (D1)
+# Module 2 integration - historical-accuracy dimension (D1)
 # Module 1 calls Module 2's external API (AI_Research_Platform_Insight/module_2,
 # run separately via `uvicorn api_server:app --port 8010`) server-side on every
 # /score request to get the D1 score. All overridable via env vars so this
@@ -70,23 +70,23 @@ FLASK_DEBUG = True
 # ─────────────────────────────────────────────────────────────────────────────
 MODULE2_BASE_URL = os.environ.get('MODULE2_BASE_URL', 'http://127.0.0.1:8010')
 # Dedicated key registered for Module 1 under ESSAY_API_KEYS in module_2/.env
-# (caller name "Module1") — distinct from the LocalTestClient/Module3 keys so
+# (caller name "Module1") - distinct from the LocalTestClient/Module3 keys so
 # module_2's saved run history correctly attributes these calls to Module 1.
 MODULE2_API_KEY = os.environ.get('MODULE2_API_KEY', '3nHwZAiB7gFz6lqck_FLjk4S72DjFvrv')
 # Module 2 grades an essay in batches of up to 6 sentences via the Claude
-# API — a long, multi-paragraph essay needs several sequential batch calls.
+# API - a long, multi-paragraph essay needs several sequential batch calls.
 # On top of that, the frontend calls Module 2 directly AT THE SAME TIME as
 # Module 1 does (both fire in parallel so the Module 2 panel can render
-# early — see frontend/app/page.tsx), so Module 2 is effectively grading
+# early - see frontend/app/page.tsx), so Module 2 is effectively grading
 # the SAME essay twice, concurrently, doubling its real workload for every
-# request. 180s was too tight for a long essay under that doubled load —
+# request. 180s was too tight for a long essay under that doubled load -
 # raised to 400s. If this still isn't enough for very long essays, the
 # more scalable fix is removing the frontend's redundant direct call
 # (Module 1's response already embeds Module 2's full result either way).
 MODULE2_TIMEOUT_SECONDS = int(os.environ.get('MODULE2_TIMEOUT_SECONDS', '400'))
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MongoDB — SAME database Module 2 uses (see module_2/.env MONGO_URI/MONGO_DB),
+# MongoDB - SAME database Module 2 uses (see module_2/.env MONGO_URI/MONGO_DB),
 # so both modules' history lives in one place. Module 1's combined D1-D4
 # results are written to their own collection (utils/mongo_store.py) rather
 # than Module 2's `essay_check_runs`, since the two have different shapes.
@@ -115,7 +115,7 @@ STRUCTURE_WEIGHTS = {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Sinhala discourse markers
-# 5 types — each type found = +1 to coherence score (max 5/5)
+# 5 types - each type found = +1 to coherence score (max 5/5)
 # ─────────────────────────────────────────────────────────────────────────────
 DISCOURSE_MARKERS = {
     'cause_effect': [
@@ -167,7 +167,7 @@ DISCOURSE_MARKERS = {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Informal words — penalised in D3 vocabulary scoring
+# Informal words - penalised in D3 vocabulary scoring
 # ─────────────────────────────────────────────────────────────────────────────
 INFORMAL_WORDS = [
     'හොඳ',
@@ -270,7 +270,7 @@ MATTR_PERFECT    = 0.70   # MATTR >= 0.70  → perfect vocabulary variety
 ACADEMIC_PERFECT = 0.15   # density >= 15% → perfect academic vocab usage
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SinBERT model settings (Phase 2 — after collecting annotated essays)
+# SinBERT model settings (Phase 2 - after collecting annotated essays)
 # ─────────────────────────────────────────────────────────────────────────────
 SINBERT_MODEL_ID  = 'sinhala-nlp/sinbert-large-si'
 SINBERT_MAX_LEN   = 512
@@ -283,12 +283,12 @@ SINBERT_BATCH     = 8
 QWK_TARGET = 0.65
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Sanity check — run directly to verify all paths
+# Sanity check - run directly to verify all paths
 # Usage:  python config.py
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 65)
-    print("  Insight Module 1 — Configuration Check")
+    print("  Insight Module 1 - Configuration Check")
     print("=" * 65)
     print(f"\n  BASE_DIR      : {BASE_DIR}")
     print(f"  DATA_DIR      : {DATA_DIR}")

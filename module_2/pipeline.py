@@ -1,5 +1,5 @@
 """
-pipeline.py — Main entry point for the Sinhala Historical KG extraction pipeline
+pipeline.py - Main entry point for the Sinhala Historical KG extraction pipeline
 
 Pipeline stages:
     1. NER           → ner_pipeline.run_ner(sentence)
@@ -92,7 +92,7 @@ def run_pipeline(
     # Stage 1: NER 
     if verbose:
         print(f"\n{'═' * 60}")
-        print(f"STAGE 1 — NER")
+        print(f"STAGE 1 - NER")
         print(f"Input: {sentence}")
 
     ner_tags = run_ner(sentence)
@@ -104,17 +104,17 @@ def run_pipeline(
 
     if not ner_tags:
         if verbose:
-            print("No entities found — skipping relation extraction.")
+            print("No entities found - skipping relation extraction.")
         return PipelineResult(sentence=sentence, ner_tags=[], triples=[])
 
     # Stage 2: Relation Extraction
     if verbose:
-        print(f"\nSTAGE 2 — DeepSeek Relation Extraction")
+        print(f"\nSTAGE 2 - DeepSeek Relation Extraction")
 
     triples = extract_relations(sentence, ner_tags, verbose=verbose)
 
     if verbose:
-        print(f"\nSTAGE 3 — Final Output")
+        print(f"\nSTAGE 3 - Final Output")
         if triples:
             for t in triples:
                 period_str = f"  [period: {t['period']}]" if t.get("period") else ""
@@ -170,7 +170,7 @@ def collect_triples(results: list[PipelineResult]) -> list[dict]:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Sinhala Historical KG — Relation Extraction Pipeline (Module 2)"
+        description="Sinhala Historical KG - Relation Extraction Pipeline (Module 2)"
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -210,7 +210,7 @@ def _parse_args() -> argparse.Namespace:
 def _interactive_mode() -> None:
     """REPL loop for manual sentence-by-sentence testing."""
     print("=" * 60)
-    print("  Sinhala Historical KG — Interactive Pipeline")
+    print("  Sinhala Historical KG - Interactive Pipeline")
     print("  Module 2 | 214161L | University of Moratuwa")
     print("  Type 'exit' or press Ctrl+C to quit.")
     print("=" * 60)

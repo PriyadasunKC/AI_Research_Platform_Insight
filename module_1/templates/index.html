@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insight — Sinhala Essay Scorer</title>
+    <title>Insight - Sinhala Essay Scorer</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -367,10 +367,10 @@
 
     // ── Dimension display config ──────────────────────────────────────────
     const DIM_CONFIG = {
-        D1: { label: "D1 — ඓතිහාසික නිරවද්‍යතාව",     icon: "🏛️" },
-        D2: { label: "D2 — Coherence & Idea Flow",   icon: "🔗" },
-        D3: { label: "D3 — Vocabulary Richness",     icon: "📚" },
-        D4: { label: "D4 — Structural Adherence",    icon: "🏗️" },
+        D1: { label: "D1 - ඓතිහාසික නිරවද්‍යතාව",     icon: "🏛️" },
+        D2: { label: "D2 - Coherence & Idea Flow",   icon: "🔗" },
+        D3: { label: "D3 - Vocabulary Richness",     icon: "📚" },
+        D4: { label: "D4 - Structural Adherence",    icon: "🏗️" },
     };
 
     // ── Tab switching ─────────────────────────────────────────────────────
@@ -480,7 +480,7 @@
         document.getElementById("summary-box").textContent =
             summary_si || "";
 
-        // Feature chips — use safe fallbacks for every field
+        // Feature chips - use safe fallbacks for every field
         document.getElementById("feature-chips").innerHTML = `
             <div class="chip">
                 සම්බන්ධකාරක: <span>${features.discourse_marker_count ?? "–"}</span>
@@ -493,7 +493,7 @@
             </div>
         `;
 
-        // Score grid — D1, D2, D3, D4
+        // Score grid - D1, D2, D3, D4
         const grid = document.getElementById("score-grid");
         grid.innerHTML = "";
 
@@ -554,7 +554,7 @@
         const weakestLabel = (DIM_CONFIG[weakest] || {}).label || weakest;
         const weakestHint  = hints[weakest] || "";
         document.getElementById("weakest-text").textContent =
-            `${weakestLabel} (${weakestScore}/5) — ${weakestHint}`;
+            `${weakestLabel} (${weakestScore}/5) - ${weakestHint}`;
 
         // Module 3 export download links
         const exportBox = document.getElementById("export-box");

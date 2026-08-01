@@ -11,10 +11,10 @@ const DIMENSION_LABELS: Record<string, string> = {
 
 export default function Module1Panel({ state }: { state: FetchState<Module1Result> }) {
   if (state.status === "loading") {
-    return <PanelShell title="Module 1 — Writing Quality (D2-D4)" status="loading" />;
+    return <PanelShell title="Module 1 - Writing Quality (D2-D4)" status="loading" />;
   }
   if (state.status === "error") {
-    return <PanelShell title="Module 1 — Writing Quality (D2-D4)" status="error" error={state.error} />;
+    return <PanelShell title="Module 1 - Writing Quality (D2-D4)" status="error" error={state.error} />;
   }
   if (state.status === "idle" || !state.data) return null;
 
@@ -22,7 +22,7 @@ export default function Module1Panel({ state }: { state: FetchState<Module1Resul
 
   return (
     <PanelShell
-      title="Module 1 — Writing Quality (D2-D4)"
+      title="Module 1 - Writing Quality (D2-D4)"
       subtitle={`Average score: ${r.average_score} / 5  ·  ${r.word_count} words  ·  scorer: ${r.model_type}`}
       status="done"
     >

@@ -32,7 +32,7 @@ CHECK_ENDPOINT = f"{MODULE2_BASE_URL}/api/v1/essay/check"
 def accuracy_to_d1(accuracy_score: Optional[float]) -> Optional[int]:
     """Convert Module 2's 0-100 accuracy_score into a 1-5 D1 score.
 
-    None in, None out — Module 2 returns accuracy_score=None when it had
+    None in, None out - Module 2 returns accuracy_score=None when it had
     zero verifiable factual claims to judge (INSUFFICIENT_KG), and D1
     should likewise be excluded from Module 1's average_score rather than
     defaulting to a specific band, matching how D1=None is already treated
@@ -57,7 +57,7 @@ def accuracy_to_d1(accuracy_score: Optional[float]) -> Optional[int]:
 def check_historical_accuracy(essay_text: str, submitted_by: Optional[str] = None) -> dict:
     """Call Module 2's /api/v1/essay/check and return a result dict.
 
-    Always returns a dict — never raises. On any failure (Module 2 not
+    Always returns a dict - never raises. On any failure (Module 2 not
     running, network error, timeout, bad response), returns
     {"ok": False, "error": "..."} so app.py can still return D2/D3/D4 with
     D1=None rather than failing the whole /score request just because
@@ -95,13 +95,13 @@ def check_historical_accuracy(essay_text: str, submitted_by: Optional[str] = Non
 def build_d1_note(module2_call: dict) -> dict:
     """Build a D1_note block shaped like the D2_note/D3_note/D4_note blocks
     in models/rule_based_scorer.py, so utils/export_module3.py's existing
-    _rename_note_keys() logic handles it identically — no changes needed
+    _rename_note_keys() logic handles it identically - no changes needed
     there. See rule_based_scorer.py's _d2_what_wrong/_d2_how_to_improve for
     the sibling pattern this follows.
 
-    On success also includes a "claims" list — every claim Module 2 graded,
+    On success also includes a "claims" list - every claim Module 2 graded,
     with its verdict, explanation, and (for INCORRECT claims) the teacher-
-    style corrective feedback text — so the combined payload sent to
+    style corrective feedback text - so the combined payload sent to
     Module 3 carries the actual per-claim evidence of what was correct/
     incorrect, not just the aggregate correct_claims/incorrect_claims
     counts.
@@ -110,9 +110,9 @@ def build_d1_note(module2_call: dict) -> dict:
         error = module2_call.get("error", "Unknown error.")
         return {
             "score": None,
-            "what_wrong": f"Could not verify historical accuracy — {error}",
+            "what_wrong": f"Could not verify historical accuracy - {error}",
             "how_to_improve": "Ensure Module 2 (the Knowledge Graph accuracy checker) is running and reachable, then re-submit.",
-            "short_note_si": "ඓතිහාසික නිරවද්‍යතාව පරීක්ෂා කළ නොහැකි විය — Module 2 සමඟ සම්බන්ධතාවයක් නොමැත.",
+            "short_note_si": "ඓතිහාසික නිරවද්‍යතාව පරීක්ෂා කළ නොහැකි විය - Module 2 සමඟ සම්බන්ධතාවයක් නොමැත.",
         }
 
     r = module2_call["raw"]
@@ -140,7 +140,7 @@ def build_d1_note(module2_call: dict) -> dict:
         else "ඓතිහාසික නිරවද්‍යතාව පරීක්ෂා කිරීමට තරම් සත්‍ය හෙළිදරව් කිරීම් රචනාවේ නොමැත."
     )
     if coverage_warning:
-        short_note_si += " (අවවාදයයි: Knowledge Graph ආවරණය අඩුය — මෙම ලකුණ සීමිත සාක්ෂි මතය.)"
+        short_note_si += " (අවවාදයයි: Knowledge Graph ආවරණය අඩුය - මෙම ලකුණ සීමිත සාක්ෂි මතය.)"
 
     return {
         "score": d1_score,
@@ -157,11 +157,11 @@ def build_d1_note(module2_call: dict) -> dict:
         # Every claim's individual teacher_feedback (1-sentence affirmations
         # for CORRECT, 2-3 sentence corrections for INCORRECT) already
         # joined into one block by Module 2 (see essay_accuracy_checker.py's
-        # aggregate_results) — forwarded as-is rather than re-joining the
+        # aggregate_results) - forwarded as-is rather than re-joining the
         # per-claim list below, so this can't drift from Module 2's own
         # combined_teacher_feedback field if that joining logic ever changes.
         "combined_teacher_feedback": r.get("combined_teacher_feedback", ""),
-        # Per-claim detail — what specifically was correct/incorrect/
+        # Per-claim detail - what specifically was correct/incorrect/
         # unverifiable and why, plus each claim's own teacher_feedback.
         # Module 2 computes all of this already (see essay_accuracy_checker.py);
         # this just forwards it into the combined payload instead of only

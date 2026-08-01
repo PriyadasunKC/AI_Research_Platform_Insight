@@ -1,4 +1,4 @@
-# Sinhala Historical KG — Relation Extraction Pipeline
+# Sinhala Historical KG - Relation Extraction Pipeline
 
 Fallback pipeline for Sinhala historical knowledge graph construction while
 SinLLaMA / Aya-Expanse-8B (Module 3) is not yet accurate enough.

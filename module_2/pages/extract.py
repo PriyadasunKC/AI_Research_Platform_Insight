@@ -1,4 +1,4 @@
-"""pages/extract.py — Extract & Save page."""
+"""pages/extract.py - Extract & Save page."""
 
 from __future__ import annotations
 
@@ -175,7 +175,7 @@ def _load_ner_once():
 def _render_input_section() -> tuple[str, bool]:
     """Renders Step 1 input area. Returns (sentence, tag_btn_pressed).
     Calls st.stop() when sentence is empty."""
-    st.markdown('<div class="kg-section-title">Step 1 — Input</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kg-section-title">Step 1 - Input</div>', unsafe_allow_html=True)
 
     col_in, col_ex = st.columns([3, 1], gap="medium")
 
@@ -245,7 +245,7 @@ def _run_ner_if_needed(sentence: str, tag_btn: bool) -> list | None:
 def _render_ner_section(sentence: str, ner_tags: list) -> None:
     """Renders Step 2 NER results. Calls st.stop() when entities are insufficient."""
     st.divider()
-    st.markdown('<div class="kg-section-title">Step 2 — Named Entities</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kg-section-title">Step 2 - Named Entities</div>', unsafe_allow_html=True)
 
     if not ner_tags:
         st.warning("No named entities detected. Try a different sentence.")
@@ -279,7 +279,7 @@ def _render_ner_section(sentence: str, ner_tags: list) -> None:
 def _render_extraction_section(sentence: str, ner_tags: list) -> None:
     """Renders Step 3 relation extraction button and calls the LLM if pressed."""
     st.divider()
-    st.markdown('<div class="kg-section-title">Step 3 — Relation Extraction</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kg-section-title">Step 3 - Relation Extraction</div>', unsafe_allow_html=True)
 
     st.markdown(
         f'<div style="font-family:\'Inter\',sans-serif;font-size:.85em;'
@@ -289,7 +289,7 @@ def _render_extraction_section(sentence: str, ner_tags: list) -> None:
         unsafe_allow_html=True,
     )
 
-    rel_btn = st.button("② Extract Relations  —  calls LLM API", type="primary")
+    rel_btn = st.button("② Extract Relations  -  calls LLM API", type="primary")
     if not rel_btn:
         return
 
@@ -312,7 +312,7 @@ def _render_extraction_section(sentence: str, ner_tags: list) -> None:
             st.error(f"API error: {e}")
             st.stop()
 
-    # Persist run to MongoDB (non-blocking — failure is logged, not surfaced)
+    # Persist run to MongoDB (non-blocking - failure is logged, not surfaced)
     try:
         from mongo_store import save_run
         run_id = save_run(
@@ -342,7 +342,7 @@ def _do_save_to_kg(sentence: str, ner_tags: list, selected_triples: list) -> Non
         except Exception:
             pass
     st.success(
-        f"Saved — **{counts['nodes_processed']}** nodes · "
+        f"Saved - **{counts['nodes_processed']}** nodes · "
         f"**{counts['edges_created']}** new edges"
     )
     st.rerun()
@@ -396,7 +396,7 @@ def _render_llm_debug(debug: dict) -> None:
 def _render_results_section(sentence: str, ner_tags: list, triples: list, debug: dict) -> None:
     """Renders Step 4 validated triples, save button, and raw JSON toggle."""
     st.divider()
-    st.markdown('<div class="kg-section-title">Step 4 — Validated Triples</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kg-section-title">Step 4 - Validated Triples</div>', unsafe_allow_html=True)
 
     if not triples:
         st.info(
@@ -416,7 +416,7 @@ def _render_results_section(sentence: str, ner_tags: list, triples: list, debug:
     st.markdown(
         '<div style="font-family:\'Inter\',sans-serif;font-size:.8em;'
         'color:rgba(255,255,255,.45);margin-bottom:6px">'
-        'Check the relations you want to save — uncheck wrong ones before saving.</div>',
+        'Check the relations you want to save - uncheck wrong ones before saving.</div>',
         unsafe_allow_html=True,
     )
 

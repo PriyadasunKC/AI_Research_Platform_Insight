@@ -1,5 +1,5 @@
 """
-tests/test_pipeline_integration.py — Integration smoke tests
+tests/test_pipeline_integration.py - Integration smoke tests
 
 These tests mock the NER model and DeepSeek API so they run offline.
 They verify the full pipeline flow: NER output → extractor → validated triples.

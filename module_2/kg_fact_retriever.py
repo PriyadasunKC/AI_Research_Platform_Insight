@@ -1,8 +1,8 @@
 """
-kg_fact_retriever.py — KG Fact Retrieval (Stage 2, Module 2, 214161L)
+kg_fact_retriever.py - KG Fact Retrieval (Stage 2, Module 2, 214161L)
 
 Queries the LIVE Neo4j database first (via kg_store). The static KG export
-(data/neo4j_query_table_data_2026-7-29.json) is used only as a fallback —
+(data/neo4j_query_table_data_2026-7-29.json) is used only as a fallback -
 per king, only when Neo4j is unreachable or genuinely returns zero facts
 for that king (which can happen if the static snapshot is newer/more
 complete for that specific king than what's currently in the live graph).
@@ -25,7 +25,7 @@ import kg_store
 _DATA_DIR    = Path(__file__).resolve().parent / "data"
 _KG_JSON_FILE = _DATA_DIR / "neo4j_query_table_data_2026-7-29.json"
 
-# Relation types prioritised first when a king has more than 80 facts —
+# Relation types prioritised first when a king has more than 80 facts -
 # the ones most likely to matter for essay fact-checking.
 _PRIORITY_RELATIONS: tuple[str, ...] = (
     "BUILT", "DEFEATED", "RULED", "UNITED", "FATHER_OF", "MOTHER_OF", "SON_OF",
@@ -87,7 +87,7 @@ def get_all_kg_names_for_king(canonical_name: str) -> set[str]:
 
 
 def _facts_from_static_export(canonical_name: str) -> list[dict]:
-    """The original static-export lookup — now used only as a fallback."""
+    """The original static-export lookup - now used only as a fallback."""
     names = get_all_kg_names_for_king(canonical_name)
     facts: list[dict] = []
     for t in load_kg():
@@ -108,7 +108,7 @@ def get_facts_for_king(canonical_name: str) -> list[dict]:
     A non-empty live result is used as-is and never merged with the static
     export, so a single essay-check run's facts all come from one source.
 
-    ALSO_KNOWN_AS triples ARE included in both sources — an essay may state
+    ALSO_KNOWN_AS triples ARE included in both sources - an essay may state
     a king's alternate name or title as a fact in its own right (e.g. "he
     was honored with the title Pandita Vijayabahu"), and the KG already
     records that as an ALSO_KNOWN_AS edge. Excluding these left such claims
@@ -121,9 +121,9 @@ def get_facts_for_king(canonical_name: str) -> list[dict]:
     if live_facts:
         return live_facts
     if live_facts is None:
-        print(f"[EssayChecker] Neo4j unreachable — falling back to static KG export for {canonical_name!r}")
+        print(f"[EssayChecker] Neo4j unreachable - falling back to static KG export for {canonical_name!r}")
     else:
-        print(f"[EssayChecker] Live KG has no facts for {canonical_name!r} — falling back to static KG export")
+        print(f"[EssayChecker] Live KG has no facts for {canonical_name!r} - falling back to static KG export")
 
     return _facts_from_static_export(canonical_name)
 
@@ -152,6 +152,6 @@ def format_facts_for_prompt(facts: list[dict]) -> str:
         obj    = t.get("object", "")
         period = (t.get("period") or "").strip()
         period_str = f" (කාලය: {period})" if period else ""
-        lines.append(f"{i}. {subj} — {rel} — {obj}{period_str}")
+        lines.append(f"{i}. {subj} - {rel} - {obj}{period_str}")
 
     return "\n".join(lines)

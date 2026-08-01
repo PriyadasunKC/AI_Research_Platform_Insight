@@ -1,7 +1,7 @@
 """
 app.py
 ======
-Insight Module 1 — Flask Web Application
+Insight Module 1 - Flask Web Application
 
 Routes:
   GET  /                       → essay submission UI
@@ -10,7 +10,7 @@ Routes:
                                   Module-3 handoff file)
   POST /score-offline          → same, but takes an uploaded Module 2
                                   result JSON instead of calling Module 2
-                                  live — for when only one module's backend
+                                  live - for when only one module's backend
                                   is running on this machine at a time
   GET  /download/<filename>    → download a generated export file
   GET  /health                 → health check
@@ -25,13 +25,13 @@ import uuid
 # Windows' default console codepage (cp1252) can't encode the emoji used in
 # the scorer-fallback log messages below, which previously crashed the
 # whole app at import time with UnicodeEncodeError before Flask even
-# started — this has nothing to do with which scorer loads, just stdout.
+# started - this has nothing to do with which scorer loads, just stdout.
 if sys.platform == 'win32':
     try:
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
     except AttributeError:
-        pass  # Python < 3.7 fallback — not expected on this project
+        pass  # Python < 3.7 fallback - not expected on this project
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -98,11 +98,11 @@ def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None
     underlying scorer is used.
 
     D1 (historical accuracy) normally comes from calling Module 2's
-    external API server-side (utils/module2_client) — Module 1 is the
+    external API server-side (utils/module2_client) - Module 1 is the
     single source of the combined 4-dimension result in that case.
 
     `module2_call`, if passed, SKIPS that live HTTP call entirely and uses
-    this pre-built result instead — shaped exactly like
+    this pre-built result instead - shaped exactly like
     module2_client.check_historical_accuracy()'s return value:
     {"ok": True, "raw": <Module 2 API response dict>} or
     {"ok": False, "error": "..."}. This is how /score-offline lets Module 1
@@ -129,7 +129,7 @@ def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None
 
     # ── Normalise to unified response format ──────────────────────────────
     scores = result.get('scores', {})
-    notes  = dict(result.get('notes', {}))  # copy — about to add D1_note
+    notes  = dict(result.get('notes', {}))  # copy - about to add D1_note
     dims   = result.get('dimensions', {})
 
     notes['D1_note'] = module2_client.build_d1_note(module2_call)
@@ -158,7 +158,7 @@ def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None
 
     return {
         'scores'         : {k: v for k, v in scores.items() if v is not None},
-        'd1_score'       : d1_score,        # resolved D1 (int 1-5 or None) — kept even when None,
+        'd1_score'       : d1_score,        # resolved D1 (int 1-5 or None) - kept even when None,
                                              # since it's filtered out of 'scores' above but the
                                              # Module-3 export needs the key present either way
         'hints'          : hints,
@@ -176,7 +176,7 @@ def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None
 app = Flask(__name__)
 
 # Internal, trusted multi-module project (Module 1 backend, Module 2 backend,
-# the Next.js frontend, Module 3) — permissive CORS, matching Module 2's own
+# the Next.js frontend, Module 3) - permissive CORS, matching Module 2's own
 # api_server.py. Tighten allow_origins to specific URLs if ever exposed
 # outside this project.
 CORS(app)
@@ -206,7 +206,7 @@ def _finalize_and_respond(essay_text: str, essay_id: str, result: dict):
     """Shared tail end of both /score and /score-offline: builds the
     weakest-area/total summary, writes the Module-3 export file, saves to
     MongoDB, and returns the JSON response. The only difference between the
-    two routes is how `result` (from score_essay_unified) got its D1 data —
+    two routes is how `result` (from score_essay_unified) got its D1 data -
     this part is identical either way, so it lives in one place."""
     scores   = result['scores']
     d1_score = result['d1_score']
@@ -239,10 +239,10 @@ def _finalize_and_respond(essay_text: str, essay_id: str, result: dict):
         'api_url'          : f"{BASE_URL}/api/v1/module3/{essay_id}",
     }
 
-    # ── Save to MongoDB — same database Module 2 uses, dedicated
+    # ── Save to MongoDB - same database Module 2 uses, dedicated
     # collection (module1_combined_results). Best-effort: if MongoDB
     # is unreachable, mongo_id is just None and the response/file
-    # export above are unaffected — see utils/mongo_store.py.
+    # export above are unaffected - see utils/mongo_store.py.
     mongo_id = mongo_store.save_combined_result(
         essay_id=essay_id,
         essay_text=essay_text,
@@ -275,7 +275,7 @@ def _finalize_and_respond(essay_text: str, essay_id: str, result: dict):
 
 def _extract_essay_and_id():
     """Shared essay_text/essay_id extraction for /score and /score-offline
-    — both accept either an uploaded 'essay_file' or an 'essay'/'essay_text'
+    - both accept either an uploaded 'essay_file' or an 'essay'/'essay_text'
     form or JSON field."""
     essay_text = ''
     essay_id = request.form.get('essay_id') or (
@@ -308,7 +308,7 @@ def score():
         else:
             manual_d1_score = request.form.get('d1_score', None)
 
-        # Parse manual_d1_score — only used as a fallback if the live call to
+        # Parse manual_d1_score - only used as a fallback if the live call to
         # Module 2 (inside score_essay_unified) fails; see module2_client.py.
         if manual_d1_score is not None:
             try:
@@ -329,7 +329,7 @@ def score():
                 'error': 'රචනය ඉතා කෙටිය. අවම වශයෙන් වචන 10ක් ලියන්න.'
             }), 400
 
-        # Score — this internally calls Module 2's API to get D1
+        # Score - this internally calls Module 2's API to get D1
         # (historical accuracy), so this single call already produces the
         # combined D1-D4 result; see score_essay_unified() / module2_client.py.
         result = score_essay_unified(essay_text, submitted_by=essay_id, manual_d1_score=manual_d1_score)
@@ -343,21 +343,21 @@ def score():
 @app.route('/score-offline', methods=['POST'])
 def score_offline():
     """Same as /score, but for when Module 2 ISN'T running on this machine
-    (see docs/HOW_TO_RUN_AND_TEST.md — running both modules together can
+    (see docs/HOW_TO_RUN_AND_TEST.md - running both modules together can
     exhaust RAM on limited hardware). Instead of calling Module 2's API,
-    accepts a Module 2 result JSON the caller already has — e.g. downloaded
+    accepts a Module 2 result JSON the caller already has - e.g. downloaded
     earlier from Module 2's own standalone frontend page while Module 2 WAS
     running. Module 1 still scores D2-D4 itself and merges everything into
     the identical combined output /score produces.
 
     Accepts multipart/form-data:
-      essay_file OR essay_text — the essay, same as /score
-      module2_file OR module2_json — the uploaded Module 2 result: either
+      essay_file OR essay_text - the essay, same as /score
+      module2_file OR module2_json - the uploaded Module 2 result: either
         an uploaded .json file, or the JSON as a raw text form field. This
         must be the exact response shape from Module 2's
-        POST /api/v1/essay/check (accuracy_score, claims, etc.) — the same
+        POST /api/v1/essay/check (accuracy_score, claims, etc.) - the same
         thing /score would have received from calling Module 2 live.
-      essay_id — optional
+      essay_id - optional
     """
     try:
         essay_text, essay_id = _extract_essay_and_id()
@@ -404,7 +404,7 @@ def score_offline():
 @app.route('/api/v1/module3/latest')
 def module3_latest():
     """Returns the most recently generated combined (D1-D4) result as JSON
-    — a convenience for Module 3 when it doesn't have a specific essay_id
+    - a convenience for Module 3 when it doesn't have a specific essay_id
     to ask for. See /api/v1/module3/<essay_id> for a specific one."""
     index = _load_module3_index()
     filename = index.get('_latest')
@@ -417,7 +417,7 @@ def module3_latest():
 def module3_by_essay_id(essay_id):
     """Module-3-facing API: returns the combined D1-D4 payload for a
     specific essay_id (the same shape written to module3_exports/*.json)
-    directly as a JSON response body — not a file download — so Module 3
+    directly as a JSON response body - not a file download - so Module 3
     can call this like a normal REST endpoint."""
     index = _load_module3_index()
     filename = index.get(essay_id)
@@ -438,7 +438,7 @@ def _serve_module3_json(filename: str):
 def module1_history():
     """Recent combined-scoring runs read back from MongoDB, newest first.
     Query param ?limit=N (default 20). Returns [] if MongoDB is unreachable
-    — not an error, since Mongo is best-effort storage (see mongo_store.py),
+    - not an error, since Mongo is best-effort storage (see mongo_store.py),
     not the source of truth for a single essay_id (that's the file-backed
     /api/v1/module3/<essay_id> endpoint above)."""
     limit = request.args.get('limit', default=20, type=int)

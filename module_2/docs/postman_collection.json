@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Sinhala Historical Essay Accuracy API",
-    "description": "Test collection for api_server.py — submit a raw Sinhala essay (as JSON text or an uploaded .txt file) and get back a KG-grounded accuracy score, claim-by-claim verdicts, and teacher-style corrections.",
+    "description": "Test collection for api_server.py - submit a raw Sinhala essay (as JSON text or an uploaded .txt file) and get back a KG-grounded accuracy score, claim-by-claim verdicts, and teacher-style corrections.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

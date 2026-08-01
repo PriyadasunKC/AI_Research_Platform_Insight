@@ -1,18 +1,18 @@
 """
-build_postman_body.py — Turn a plain .txt essay file into a properly
+build_postman_body.py - Turn a plain .txt essay file into a properly
 JSON-escaped request body, ready to paste into Postman's raw/JSON body
 editor (or use with curl --data-binary @file).
 
 Why this exists: pasting a multi-line essay directly into Postman's (or
 curl's) raw body editor keeps the literal line breaks, which is not valid
-JSON — every JSON parser used by this API (Python's json module, via
+JSON - every JSON parser used by this API (Python's json module, via
 FastAPI/Pydantic) rejects unescaped control characters inside a string.
 This script does the escaping for you.
 
 Usage:
     python docs/build_postman_body.py path/to/essay.txt [submitted_by]
 
-Prints the JSON body to stdout — copy it straight into Postman's body
+Prints the JSON body to stdout - copy it straight into Postman's body
 editor (Body -> raw -> JSON), or redirect it to a file for curl:
     python docs/build_postman_body.py essay.txt student-042 > body.json
     curl -X POST http://localhost:8010/api/v1/essay/check \\
@@ -26,7 +26,7 @@ import json
 import sys
 
 # Windows consoles default stdout to the system codepage (e.g. cp1252),
-# which cannot encode Sinhala characters — force UTF-8 regardless of
+# which cannot encode Sinhala characters - force UTF-8 regardless of
 # platform/terminal so this always works, redirected to a file or not.
 sys.stdout.reconfigure(encoding="utf-8")
 

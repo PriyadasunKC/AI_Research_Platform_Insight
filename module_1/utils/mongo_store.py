@@ -1,14 +1,14 @@
 """
-utils/mongo_store.py — MongoDB storage for Module 1's combined D1-D4 result.
+utils/mongo_store.py - MongoDB storage for Module 1's combined D1-D4 result.
 
 Uses the SAME MongoDB database Module 2 uses (MONGO_URI/MONGO_DB in
-config.py — see module_2/mongo_store.py for the sibling implementation),
+config.py - see module_2/mongo_store.py for the sibling implementation),
 in a dedicated `module1_combined_results` collection. Module 2's own
 `essay_check_runs` collection is left untouched; the two modules save
 different-shaped documents so they get their own collections rather than
 being forced into one schema.
 
-Connection is lazy — importing this module never raises even if MongoDB
+Connection is lazy - importing this module never raises even if MongoDB
 is not reachable, and every function degrades to returning None/[] rather
 than raising, matching module_2/mongo_store.py's behavior.
 """
@@ -69,7 +69,7 @@ def save_combined_result(
         average_score:    The averaged 1-5 score across available dimensions.
         summary_si:       Sinhala summary string.
         module2_result:   {"ok": bool, "error": str} or {"ok": True, "raw": {...}}
-                          — kept for traceability of what Module 2 actually
+                          - kept for traceability of what Module 2 actually
                           returned (or why it didn't) at the time.
         module3_export:   The json_download_url/txt_download_url/api_url
                           dict already built for the HTTP response.

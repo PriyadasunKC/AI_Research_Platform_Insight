@@ -8,7 +8,7 @@ __pycache__/
 *.pyo
 *.pyd
 
-# NER model weights (large binary files — add manually)
+# NER model weights (large binary files - add manually)
 models/xlmr_ner/*.bin
 models/xlmr_ner/*.safetensors
 
