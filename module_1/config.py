@@ -13,6 +13,13 @@ DO NOT hardcode any paths. Always use the variables defined here.
 
 import os
 
+from dotenv import load_dotenv
+
+# Loads .env into os.environ (e.g. HF_TOKEN for downloading SinBERT-large —
+# see utils/sinbert_embedder.py — and the MODULE2_*/MONGO_* overrides below).
+# Must run before any os.environ.get() calls in this file or importers of it.
+load_dotenv()
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Project root — auto-detected from this file's location
 # Works on Windows, Mac, Linux, and Google Colab
