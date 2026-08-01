@@ -1,0 +1,21 @@
+# Environment
+.env
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Trained model weights (large — handle separately if needed)
+models/saved/*.pt
+
+# Generated Module-3 export files
+module3_exports/
+
+# Misc
+*.egg-info/
+dist/
+build/
+.pytest_cache/

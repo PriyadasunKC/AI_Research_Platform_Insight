@@ -55,6 +55,42 @@ FLASK_PORT  = 5000
 FLASK_DEBUG = True
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Module 2 integration — historical-accuracy dimension (D1)
+# Module 1 calls Module 2's external API (AI_Research_Platform_Insight/module_2,
+# run separately via `uvicorn api_server:app --port 8010`) server-side on every
+# /score request to get the D1 score. All overridable via env vars so this
+# still works if Module 2 runs on a different host/port in another environment.
+# ─────────────────────────────────────────────────────────────────────────────
+MODULE2_BASE_URL = os.environ.get('MODULE2_BASE_URL', 'http://127.0.0.1:8010')
+# Dedicated key registered for Module 1 under ESSAY_API_KEYS in module_2/.env
+# (caller name "Module1") — distinct from the LocalTestClient/Module3 keys so
+# module_2's saved run history correctly attributes these calls to Module 1.
+MODULE2_API_KEY = os.environ.get('MODULE2_API_KEY', '3nHwZAiB7gFz6lqck_FLjk4S72DjFvrv')
+# Module 2 grades an essay in batches of up to 6 sentences via the Claude
+# API — a long, multi-paragraph essay needs several sequential batch calls.
+# On top of that, the frontend calls Module 2 directly AT THE SAME TIME as
+# Module 1 does (both fire in parallel so the Module 2 panel can render
+# early — see frontend/app/page.tsx), so Module 2 is effectively grading
+# the SAME essay twice, concurrently, doubling its real workload for every
+# request. 180s was too tight for a long essay under that doubled load —
+# raised to 400s. If this still isn't enough for very long essays, the
+# more scalable fix is removing the frontend's redundant direct call
+# (Module 1's response already embeds Module 2's full result either way).
+MODULE2_TIMEOUT_SECONDS = int(os.environ.get('MODULE2_TIMEOUT_SECONDS', '400'))
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MongoDB — SAME database Module 2 uses (see module_2/.env MONGO_URI/MONGO_DB),
+# so both modules' history lives in one place. Module 1's combined D1-D4
+# results are written to their own collection (utils/mongo_store.py) rather
+# than Module 2's `essay_check_runs`, since the two have different shapes.
+# ─────────────────────────────────────────────────────────────────────────────
+MONGO_URI = os.environ.get(
+    'MONGO_URI',
+    'mongodb+srv://ner_user:nerdb123@sinhalakg.gsxkm5p.mongodb.net/?appName=sinhalakg',
+)
+MONGO_DB = os.environ.get('MONGO_DB', 'sinhalakg')
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Scoring weights  (from project spec)
 # ─────────────────────────────────────────────────────────────────────────────
 VOCAB_WEIGHTS = {

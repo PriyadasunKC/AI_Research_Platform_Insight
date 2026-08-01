@@ -26,8 +26,8 @@ EXPORT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
 os.makedirs(EXPORT_DIR, exist_ok=True)
 
 # How each dimension code should be labelled in the file sent to Module 3.
-# D1 is left as "D1" since Module 1 doesn't score it (comes from another module).
 DIMENSION_NAMES = {
+    "D1": "Historical Accuracy(D1)",
     "D2": "Coherence & Idea Flow(D2)",
     "D3": "Vocabulary Richness(D3)",
     "D4": "Structural Adherence(D4)",
@@ -35,7 +35,7 @@ DIMENSION_NAMES = {
 
 
 def _dim_label(code: str) -> str:
-    """'D2' -> 'Coherence & Idea Flow', 'D1' -> 'D1' (unmapped codes pass through)."""
+    """'D2' -> 'Coherence & Idea Flow(D2)' (unmapped codes pass through unchanged)."""
     return DIMENSION_NAMES.get(code, code)
 
 
@@ -89,18 +89,20 @@ def build_module3_payload(essay_text: str, scores: dict, notes: dict,
                            rag_context: list | None = None) -> dict:
     """
     Build the object sent to Module 3, based on the shape documented in
-    section 10.2 of the Module 1 docs — with D2/D3/D4 relabelled to their
-    full dimension names, and a "weakest_area" block added right after
-    the three dimensions:
+    section 10.2 of the Module 1 docs — with all four dimensions relabelled
+    to their full names (D1 included, via Module 2's server-side result —
+    see utils/module2_client.py), and a "weakest_area" block added right
+    after them:
 
         {
           "essay_text": "...",
-          "scores": {"D1":3, "Coherence & Idea Flow":2,
-                     "Vocabulary Richness":3, "Structural Adherence":2},
-          "notes": {"Coherence & Idea Flow": {...},
-                    "Vocabulary Richness": {...},
-                    "Structural Adherence": {...}},
-          "weakest_area": {"dimension": "Structural Adherence", "score": 2,
+          "scores": {"Historical Accuracy(D1)":3, "Coherence & Idea Flow(D2)":2,
+                     "Vocabulary Richness(D3)":3, "Structural Adherence(D4)":2},
+          "notes": {"Historical Accuracy(D1)": {...},
+                    "Coherence & Idea Flow(D2)": {...},
+                    "Vocabulary Richness(D3)": {...},
+                    "Structural Adherence(D4)": {...}},
+          "weakest_area": {"dimension": "Structural Adherence(D4)", "score": 2,
                             "hint": "..."},
           "rag_context": [{"text":"...", "source":"...", "relevance":0.87}]
         }

@@ -24,8 +24,23 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
+import traceback
 from typing import Optional
+
+# Windows' default console codepage (cp1252) can't encode the Sinhala text
+# in this project's print()-based logging (e.g. essay_accuracy_checker.py's
+# "[EssayChecker] ..." messages, kg_fact_retriever.py's fallback notices) —
+# uncaught, this crashes the request that triggered the log line with a
+# UnicodeEncodeError instead of just failing to print. Reconfigure early,
+# before any of this project's modules (which log at call-time) are used.
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except AttributeError:
+        pass
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile
@@ -211,6 +226,11 @@ def _run_and_save(essay_text: str, caller: str, submitted_by: Optional[str]) -> 
     try:
         result = eac.check_essay_accuracy(essay_text, ANTHROPIC_API_KEY)
     except Exception as exc:
+        # Print the full traceback to the server console — previously the
+        # only place this exception's detail existed was the HTTP response
+        # body, so a 502 in the console log alone gave zero diagnostic
+        # information (see uvicorn access log: just "502 Bad Gateway").
+        traceback.print_exc()
         raise HTTPException(status_code=502, detail=f"Essay check failed: {exc}") from exc
     elapsed = time.monotonic() - started
 

@@ -1,0 +1,231 @@
+{
+  "info": {
+    "name": "AI Research Platform Insight — Module 1 + Module 2",
+    "description": "Test collection for the combined essay-feedback backend: Module 1 (Flask, port 5000, D2-D4 writing quality + calls Module 2 server-side for D1) and Module 2 (FastAPI, port 8010, historical accuracy via Knowledge Graph). Run the requests top to bottom under 'Full Flow' for the intended demo order — later requests auto-fill essay_id/run_id from earlier responses via collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "module1_base_url", "value": "http://127.0.0.1:5000" },
+    { "key": "module2_base_url", "value": "http://127.0.0.1:8010" },
+    { "key": "module2_api_key", "value": "test-local-key" },
+    { "key": "essay_text", "value": "දුටුගැමුණු රජු ලංකා ඉතිහාසයේ අති වීරෝදාර රජෙකි. ඔහු කාවන්තිස්ස රජුගේ පුත්‍රයා විය. දුටුගැමුණු රජු එළාර රජු පරාජය කර රට එක්සත් කළේය. ඔහු රුවන්වැලිසෑය ඉදිකළේය." },
+    { "key": "essay_id", "value": "" },
+    { "key": "run_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Health checks",
+      "item": [
+        {
+          "name": "Module 1 — Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module1_base_url}}/health",
+              "host": ["{{module1_base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Module 2 — Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module2_base_url}}/api/v1/health",
+              "host": ["{{module2_base_url}}"],
+              "path": ["api", "v1", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Full Flow",
+      "item": [
+        {
+          "name": "1. Module 1 — Score essay (combined D1-D4)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('essay_id', body.essay_id);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('scores present', () => pm.expect(body.scores).to.have.property('D1'));",
+                  "pm.test('module3_export.api_url present', () => pm.expect(body.module3_export).to.have.property('api_url'));",
+                  "console.log('essay_id ->', body.essay_id, ' mongo_id ->', body.mongo_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"essay\": \"{{essay_text}}\",\n  \"essay_id\": \"postman-run-{{$timestamp}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{module1_base_url}}/score",
+              "host": ["{{module1_base_url}}"],
+              "path": ["score"]
+            },
+            "description": "Scores D2-D4 itself and calls Module 2 server-side for D1 — this one call returns the full combined result. Saves a Module-3 export file AND a MongoDB document (mongo_id in the response). Sets {{essay_id}} for the next requests."
+          }
+        },
+        {
+          "name": "2. Module 1 — Get combined output for Module 3 (by essay_id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module1_base_url}}/api/v1/module3/{{essay_id}}",
+              "host": ["{{module1_base_url}}"],
+              "path": ["api", "v1", "module3", "{{essay_id}}"]
+            },
+            "description": "The actual external API Module 3 calls to fetch the combined D1-D4 JSON — run request 1 first so {{essay_id}} is set."
+          }
+        },
+        {
+          "name": "3. Module 1 — Get combined output (latest, no essay_id needed)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module1_base_url}}/api/v1/module3/latest",
+              "host": ["{{module1_base_url}}"],
+              "path": ["api", "v1", "module3", "latest"]
+            }
+          }
+        },
+        {
+          "name": "4. Module 1 — MongoDB history (recent runs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module1_base_url}}/api/v1/module1/history?limit=10",
+              "host": ["{{module1_base_url}}"],
+              "path": ["api", "v1", "module1", "history"],
+              "query": [{ "key": "limit", "value": "10" }]
+            },
+            "description": "Confirms the combined result was actually persisted to the same MongoDB database Module 2 uses (collection: module1_combined_results)."
+          }
+        },
+        {
+          "name": "5. Module 1 — MongoDB history (by essay_id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{module1_base_url}}/api/v1/module1/history/{{essay_id}}",
+              "host": ["{{module1_base_url}}"],
+              "path": ["api", "v1", "module1", "history", "{{essay_id}}"]
+            }
+          }
+        },
+        {
+          "name": "6. Module 2 — Check essay directly (for comparison / frontend-style parallel call)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('run_id', body.request_id);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{module2_api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"essay_text\": \"{{essay_text}}\",\n  \"submitted_by\": \"postman-test\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{module2_base_url}}/api/v1/essay/check",
+              "host": ["{{module2_base_url}}"],
+              "path": ["api", "v1", "essay", "check"]
+            },
+            "description": "This is exactly what Module 1's utils/module2_client.py calls server-side, and what the frontend also calls directly in parallel. Sets {{run_id}} for the next request."
+          }
+        },
+        {
+          "name": "7. Module 2 — Get result by run_id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{module2_api_key}}" }
+            ],
+            "url": {
+              "raw": "{{module2_base_url}}/api/v1/essay/{{run_id}}",
+              "host": ["{{module2_base_url}}"],
+              "path": ["api", "v1", "essay", "{{run_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File uploads",
+      "item": [
+        {
+          "name": "Module 1 — Score essay (file upload)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "essay_file", "type": "file", "src": [], "description": "A .txt file containing the Sinhala essay (UTF-8 encoded)." },
+                { "key": "essay_id", "type": "text", "value": "postman-file-test" }
+              ]
+            },
+            "url": {
+              "raw": "{{module1_base_url}}/score",
+              "host": ["{{module1_base_url}}"],
+              "path": ["score"]
+            }
+          }
+        },
+        {
+          "name": "Module 2 — Check essay (file upload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{module2_api_key}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [], "description": "A .txt file containing the Sinhala essay (UTF-8 encoded)." },
+                { "key": "submitted_by", "type": "text", "value": "postman-file-test" }
+              ]
+            },
+            "url": {
+              "raw": "{{module2_base_url}}/api/v1/essay/check-file",
+              "host": ["{{module2_base_url}}"],
+              "path": ["api", "v1", "essay", "check-file"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
