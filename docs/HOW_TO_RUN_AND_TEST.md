@@ -45,7 +45,51 @@ venv\Scripts\python app.py
 
 Verify: open http://127.0.0.1:5000/health — should return
 `{"status":"ok","scorer":"rule_based"}` (or `"sinbert_finetuned"` if torch
-is installed).
+is installed and set up per the next section).
+
+### Optional: enable the SinBERT scorer instead of rule-based
+
+Skip this unless you specifically want the validated `QWK=0.897` scores
+instead of the rule-based baseline — see the memory-usage warning below
+before doing this.
+
+The trained model weights already exist at
+`module_1/models/saved/sinbert_scorer.pt` — nothing to train. Three things
+are needed to actually use them:
+
+1. **Install the ML libraries** (only these three — not
+   `scikit-learn`/`pandas`, neither scorer path uses them):
+   ```
+   cd AI_Research_Platform_Insight/module_1
+   venv\Scripts\pip install torch transformers numpy
+   ```
+
+2. **Set `HF_TOKEN` in `module_1/.env`** (create the file if it doesn't
+   exist yet):
+   ```
+   HF_TOKEN=your_huggingface_token_here
+   ```
+   Needed to download the base model `NLPC-UOM/SinBERT-large` (~300MB)
+   from HuggingFace on first use (`utils/sinbert_embedder.py`). Loaded
+   automatically via `python-dotenv` in `config.py` — no other code
+   change needed. **Never commit this file** — `module_1/.gitignore`
+   already excludes `.env`, but double-check before pushing if you ever
+   move or copy this folder without that `.gitignore` coming with it.
+
+3. **Restart Module 1** (`venv\Scripts\python app.py`). The first request
+   that actually needs the scorer will trigger the ~300MB download (needs
+   internet, only happens once — cached afterward). Startup/first-use log
+   should change from `⚠️  SinBERT not available` to
+   `✅ Using SinBERT scorer (QWK=0.897)`, and `/health` should report
+   `"scorer":"sinbert_finetuned"`.
+
+**Memory warning — read this before doing the above.** SinBERT-large
+needs real RAM on top of whatever Module 2's own ~1.1GB NER model needs.
+Running both modules together with SinBERT enabled is the exact
+combination that caused Module 2 to crash silently with no error earlier
+(see "Common issues" below) — check free RAM in Task Manager first, and
+if you just want to confirm SinBERT itself works, test Module 1 alone
+before running Module 2 alongside it.
 
 ## 3. Start the frontend (Next.js, port 3000)
 
@@ -99,7 +143,7 @@ collection → Edit → Variables): `module1_base_url`, `module2_base_url`
 | 3 | `GET /api/v1/module3/latest` | Same, without needing to know the `essay_id`. |
 | 4 | `GET /api/v1/module1/history` | The combined result was actually persisted to MongoDB (same database Module 2 uses, collection `module1_combined_results`). |
 | 5 | `GET /api/v1/module1/history/<essay_id>` | Same, filtered to one specific essay. |
-| 6 | `POST /api/v1/essay/check` (Module 2) | Module 2 works standalone — this is exactly what Module 1 calls internally, and what the frontend also calls directly in parallel. |
+| 6 | `POST /api/v1/essay/check` (Module 2) | Module 2 works standalone — this is exactly what Module 1 calls internally (the frontend no longer calls Module 2 directly — it reads Module 2's data out of Module 1's own response, to avoid double-processing every essay). |
 | 7 | `GET /api/v1/essay/<run_id>` | Re-fetching a past Module 2 result by ID. |
 
 ### Common issues
