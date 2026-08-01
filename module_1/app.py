@@ -5,8 +5,13 @@ Insight Module 1 — Flask Web Application
 
 Routes:
   GET  /                       → essay submission UI
-  POST /score                  → scores essay, returns JSON (now also
-                                  generates a Module-3 handoff file)
+  POST /score                  → scores essay, calls Module 2 live for D1,
+                                  returns combined JSON (also generates a
+                                  Module-3 handoff file)
+  POST /score-offline          → same, but takes an uploaded Module 2
+                                  result JSON instead of calling Module 2
+                                  live — for when only one module's backend
+                                  is running on this machine at a time
   GET  /download/<filename>    → download a generated export file
   GET  /health                 → health check
 """
@@ -86,24 +91,35 @@ except Exception as e:
         _score_fn = None
 
 
-def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None) -> dict:
+def score_essay_unified(essay_text: str, submitted_by=None, manual_d1_score=None, module2_call=None) -> dict:
     """
     Unified scoring function.
     Always returns the same dict structure regardless of which
     underlying scorer is used.
 
-    D1 (historical accuracy) is now obtained by calling Module 2's external
-    API server-side (utils/module2_client) rather than being supplied by
-    the caller — Module 1 is the single source of the combined 4-dimension
-    result. `manual_d1_score` (an already-1-5 integer) is used ONLY as a
-    fallback when the Module 2 call fails (e.g. Module 2 isn't running),
-    so manual testing without Module 2 up still works the way it did before
-    this integration.
+    D1 (historical accuracy) normally comes from calling Module 2's
+    external API server-side (utils/module2_client) — Module 1 is the
+    single source of the combined 4-dimension result in that case.
+
+    `module2_call`, if passed, SKIPS that live HTTP call entirely and uses
+    this pre-built result instead — shaped exactly like
+    module2_client.check_historical_accuracy()'s return value:
+    {"ok": True, "raw": <Module 2 API response dict>} or
+    {"ok": False, "error": "..."}. This is how /score-offline lets Module 1
+    run on a machine where Module 2 isn't running at all (see that route),
+    using a Module 2 result JSON the caller already has (e.g. downloaded
+    from Module 2's own standalone frontend page earlier).
+
+    `manual_d1_score` (an already-1-5 integer) is used ONLY as a fallback
+    when neither of the above produces a usable result (e.g. the live
+    Module 2 call fails), so manual testing without Module 2 up still
+    works the way it did before this integration.
     """
     if _score_fn is None:
         raise RuntimeError("No scorer loaded. Check models/ folder.")
 
-    module2_call = module2_client.check_historical_accuracy(essay_text, submitted_by=submitted_by)
+    if module2_call is None:
+        module2_call = module2_client.check_historical_accuracy(essay_text, submitted_by=submitted_by)
     if module2_call.get('ok'):
         d1_score = module2_client.accuracy_to_d1(module2_call['raw'].get('accuracy_score'))
     else:
@@ -186,31 +202,109 @@ def download(filename):
     return send_from_directory(EXPORT_DIR, filename, as_attachment=True)
 
 
+def _finalize_and_respond(essay_text: str, essay_id: str, result: dict):
+    """Shared tail end of both /score and /score-offline: builds the
+    weakest-area/total summary, writes the Module-3 export file, saves to
+    MongoDB, and returns the JSON response. The only difference between the
+    two routes is how `result` (from score_essay_unified) got its D1 data —
+    this part is identical either way, so it lives in one place."""
+    scores   = result['scores']
+    d1_score = result['d1_score']
+    weakest = min(
+        {k: v for k, v in scores.items() if k != 'D1' and v},
+        key=lambda k: scores[k],
+        default='D2'
+    )
+    total = round(sum(v for v in scores.values() if v), 1)
+
+    # ── Generate the Module-3 handoff file ──────────────────────────────
+    # Writes the exact combined payload Module 3 expects (see docs §10.2)
+    # to disk, plus a readable .txt version, and records it in the
+    # essay_id -> filename index so GET /api/v1/module3/<essay_id> (and
+    # /api/v1/module3/latest) can serve it back as JSON directly.
+    export_info = save_export_files(
+        essay_text=essay_text,
+        scores={**scores, 'D1': d1_score},
+        notes=result['notes'],
+        essay_id=essay_id,
+        average_score=result['average_score'],
+        summary_si=result['summary_si'],
+        weakest=weakest,
+    )
+    _record_module3_export(essay_id, export_info['json_filename'])
+
+    module3_export = {
+        'json_download_url': f"{BASE_URL}/download/{export_info['json_filename']}",
+        'txt_download_url' : f"{BASE_URL}/download/{export_info['txt_filename']}",
+        'api_url'          : f"{BASE_URL}/api/v1/module3/{essay_id}",
+    }
+
+    # ── Save to MongoDB — same database Module 2 uses, dedicated
+    # collection (module1_combined_results). Best-effort: if MongoDB
+    # is unreachable, mongo_id is just None and the response/file
+    # export above are unaffected — see utils/mongo_store.py.
+    mongo_id = mongo_store.save_combined_result(
+        essay_id=essay_id,
+        essay_text=essay_text,
+        scores={**scores, 'D1': d1_score},
+        notes=result['notes'],
+        weakest=weakest,
+        average_score=result['average_score'],
+        summary_si=result['summary_si'],
+        module2_result=result['module2_result'],
+        module3_export=module3_export,
+    )
+
+    return jsonify({
+        'essay_id'     : essay_id,
+        'mongo_id'     : mongo_id,
+        'scores'       : {**scores, 'D1': d1_score},
+        'hints'        : result['hints'],
+        'notes'        : result['notes'],        # for Module 3, includes D1_note
+        'weakest'      : weakest,
+        'total'        : total,
+        'average_score': result['average_score'],
+        'summary_si'   : result['summary_si'],
+        'word_count'   : result['word_count'],
+        'model_type'   : result['model_type'],
+        'features'     : result['features'],
+        'module2_result': result['module2_result'],  # raw Module 2 response, for transparency
+        'module3_export': module3_export,
+    })
+
+
+def _extract_essay_and_id():
+    """Shared essay_text/essay_id extraction for /score and /score-offline
+    — both accept either an uploaded 'essay_file' or an 'essay'/'essay_text'
+    form or JSON field."""
+    essay_text = ''
+    essay_id = request.form.get('essay_id') or (
+        request.get_json(silent=True) or {}
+    ).get('essay_id') if request.is_json else request.form.get('essay_id')
+    essay_id = essay_id or f"essay-{uuid.uuid4().hex[:8]}"
+
+    if 'essay_file' in request.files:
+        file = request.files['essay_file']
+        if file.filename != '':
+            essay_text = file.read().decode('utf-8')
+
+    if not essay_text:
+        if request.is_json:
+            data = request.get_json(silent=True) or {}
+            essay_text = (data.get('essay') or data.get('essay_text') or '').strip()
+        else:
+            essay_text = (request.form.get('essay_text') or request.form.get('essay') or '').strip()
+
+    return essay_text, essay_id
+
+
 @app.route('/score', methods=['POST'])
 def score():
     try:
-        essay_text = ''
-        essay_id = request.form.get('essay_id') or (
-            request.get_json(silent=True) or {}
-        ).get('essay_id') if request.is_json else request.form.get('essay_id')
-        essay_id = essay_id or f"essay-{uuid.uuid4().hex[:8]}"
+        essay_text, essay_id = _extract_essay_and_id()
 
-        # Check uploaded file
-        if 'essay_file' in request.files:
-            file = request.files['essay_file']
-            if file.filename != '':
-                essay_text = file.read().decode('utf-8')
-
-        # Check typed/JSON text
-        if not essay_text:
-            # Support both form data and JSON body
-            if request.is_json:
-                data             = request.get_json(silent=True) or {}
-                essay_text       = data.get('essay', '').strip()
-                manual_d1_score  = data.get('d1_score', None)
-            else:
-                essay_text       = request.form.get('essay_text', '').strip()
-                manual_d1_score  = request.form.get('d1_score', None)
+        if request.is_json:
+            manual_d1_score = (request.get_json(silent=True) or {}).get('d1_score', None)
         else:
             manual_d1_score = request.form.get('d1_score', None)
 
@@ -238,70 +332,69 @@ def score():
         # Score — this internally calls Module 2's API to get D1
         # (historical accuracy), so this single call already produces the
         # combined D1-D4 result; see score_essay_unified() / module2_client.py.
-        result   = score_essay_unified(essay_text, submitted_by=essay_id, manual_d1_score=manual_d1_score)
-        scores   = result['scores']
-        d1_score = result['d1_score']
-        weakest = min(
-            {k: v for k, v in scores.items() if k != 'D1' and v},
-            key=lambda k: scores[k],
-            default='D2'
-        )
-        total = round(sum(v for v in scores.values() if v), 1)
+        result = score_essay_unified(essay_text, submitted_by=essay_id, manual_d1_score=manual_d1_score)
+        return _finalize_and_respond(essay_text, essay_id, result)
 
-        # ── Generate the Module-3 handoff file ──────────────────────────────
-        # Writes the exact combined payload Module 3 expects (see docs §10.2)
-        # to disk, plus a readable .txt version, and records it in the
-        # essay_id -> filename index so GET /api/v1/module3/<essay_id> (and
-        # /api/v1/module3/latest) can serve it back as JSON directly.
-        export_info = save_export_files(
-            essay_text=essay_text,
-            scores={**scores, 'D1': d1_score},
-            notes=result['notes'],
-            essay_id=essay_id,
-            average_score=result['average_score'],
-            summary_si=result['summary_si'],
-            weakest=weakest,
-        )
-        _record_module3_export(essay_id, export_info['json_filename'])
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
-        module3_export = {
-            'json_download_url': f"{BASE_URL}/download/{export_info['json_filename']}",
-            'txt_download_url' : f"{BASE_URL}/download/{export_info['txt_filename']}",
-            'api_url'          : f"{BASE_URL}/api/v1/module3/{essay_id}",
-        }
 
-        # ── Save to MongoDB — same database Module 2 uses, dedicated
-        # collection (module1_combined_results). Best-effort: if MongoDB
-        # is unreachable, mongo_id is just None and the response/file
-        # export above are unaffected — see utils/mongo_store.py.
-        mongo_id = mongo_store.save_combined_result(
-            essay_id=essay_id,
-            essay_text=essay_text,
-            scores={**scores, 'D1': d1_score},
-            notes=result['notes'],
-            weakest=weakest,
-            average_score=result['average_score'],
-            summary_si=result['summary_si'],
-            module2_result=result['module2_result'],
-            module3_export=module3_export,
-        )
+@app.route('/score-offline', methods=['POST'])
+def score_offline():
+    """Same as /score, but for when Module 2 ISN'T running on this machine
+    (see docs/HOW_TO_RUN_AND_TEST.md — running both modules together can
+    exhaust RAM on limited hardware). Instead of calling Module 2's API,
+    accepts a Module 2 result JSON the caller already has — e.g. downloaded
+    earlier from Module 2's own standalone frontend page while Module 2 WAS
+    running. Module 1 still scores D2-D4 itself and merges everything into
+    the identical combined output /score produces.
 
-        return jsonify({
-            'essay_id'     : essay_id,
-            'mongo_id'     : mongo_id,
-            'scores'       : {**scores, 'D1': d1_score},
-            'hints'        : result['hints'],
-            'notes'        : result['notes'],        # for Module 3, includes D1_note
-            'weakest'      : weakest,
-            'total'        : total,
-            'average_score': result['average_score'],
-            'summary_si'   : result['summary_si'],
-            'word_count'   : result['word_count'],
-            'model_type'   : result['model_type'],
-            'features'     : result['features'],
-            'module2_result': result['module2_result'],  # raw Module 2 response, for transparency
-            'module3_export': module3_export,
-        })
+    Accepts multipart/form-data:
+      essay_file OR essay_text — the essay, same as /score
+      module2_file OR module2_json — the uploaded Module 2 result: either
+        an uploaded .json file, or the JSON as a raw text form field. This
+        must be the exact response shape from Module 2's
+        POST /api/v1/essay/check (accuracy_score, claims, etc.) — the same
+        thing /score would have received from calling Module 2 live.
+      essay_id — optional
+    """
+    try:
+        essay_text, essay_id = _extract_essay_and_id()
+
+        module2_json_text = None
+        if 'module2_file' in request.files and request.files['module2_file'].filename:
+            module2_json_text = request.files['module2_file'].read().decode('utf-8')
+        elif request.form.get('module2_json'):
+            module2_json_text = request.form.get('module2_json')
+        elif request.is_json:
+            body = request.get_json(silent=True) or {}
+            module2_json_text = body.get('module2_json')
+            if isinstance(module2_json_text, dict):
+                module2_json_text = json.dumps(module2_json_text)
+
+        if not essay_text:
+            return jsonify({'error': 'රචනයක් ඇතුළත් කරන්න හෝ ගොනුවක් උඩුගත කරන්න.'}), 400
+        if len(essay_text.split()) < 10:
+            return jsonify({'error': 'රචනය ඉතා කෙටිය. අවම වශයෙන් වචන 10ක් ලියන්න.'}), 400
+        if not module2_json_text:
+            return jsonify({'error': 'Module 2 result JSON is required (module2_file or module2_json).'}), 400
+
+        try:
+            module2_raw = json.loads(module2_json_text)
+        except json.JSONDecodeError as exc:
+            return jsonify({'error': f'Module 2 JSON is not valid: {exc}'}), 400
+
+        if not isinstance(module2_raw, dict) or 'accuracy_score' not in module2_raw:
+            return jsonify({
+                'error': "Uploaded JSON doesn't look like a Module 2 result "
+                         "(expected the response shape from Module 2's "
+                         "POST /api/v1/essay/check, with an accuracy_score field)."
+            }), 400
+
+        module2_call = {'ok': True, 'raw': module2_raw}
+        result = score_essay_unified(essay_text, submitted_by=essay_id, module2_call=module2_call)
+        return _finalize_and_respond(essay_text, essay_id, result)
 
     except Exception as e:
         traceback.print_exc()

@@ -1,5 +1,6 @@
 import type { FetchState, Module2Claim, Module2Result } from "@/lib/types";
 import PanelShell from "./PanelShell";
+import JsonBlock from "./JsonBlock";
 
 const VERDICT_STYLES: Record<Module2Claim["verdict"], string> = {
   CORRECT: "border-emerald-800 bg-emerald-950/40 text-emerald-300",
@@ -7,7 +8,18 @@ const VERDICT_STYLES: Record<Module2Claim["verdict"], string> = {
   UNVERIFIABLE: "border-slate-700 bg-slate-950 text-slate-400",
 };
 
-export default function Module2Panel({ state }: { state: FetchState<Module2Result> }) {
+export default function Module2Panel({
+  state,
+  showJsonExport = false,
+  downloadName = "module2_result.json",
+}: {
+  state: FetchState<Module2Result>;
+  /** Adds a "raw JSON" block with Copy/Download — off by default so the
+   * combined-flow page (which already has its own Combined Output JSON
+   * panel) doesn't change. Turned on for the standalone Module 2 page. */
+  showJsonExport?: boolean;
+  downloadName?: string;
+}) {
   if (state.status === "loading") {
     return <PanelShell title="Module 2 — Historical Accuracy (D1)" status="loading" />;
   }
@@ -28,12 +40,13 @@ export default function Module2Panel({ state }: { state: FetchState<Module2Resul
       }
       status="done"
     >
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         <Stat label="Accuracy" value={r.accuracy_score !== null ? `${r.accuracy_score}%` : "N/A"} />
         <Stat label="Confidence" value={r.confidence_level} />
         <Stat label="Correct" value={String(r.correct_claims)} />
         <Stat label="Incorrect" value={String(r.incorrect_claims)} />
         <Stat label="Unverifiable" value={String(r.unverifiable_claims)} />
+        <Stat label="Editorial" value={String(r.editorial_claims)} />
       </div>
 
       {r.coverage_warning && (
@@ -45,7 +58,7 @@ export default function Module2Panel({ state }: { state: FetchState<Module2Resul
 
       {r.claims.length > 0 && (
         <div className="mt-4 space-y-2">
-          <p className="text-xs font-medium text-slate-400">Claim-by-claim verdicts</p>
+          <p className="text-xs font-medium text-slate-400">Claim-by-claim verdicts (LLM output)</p>
           <div className="max-h-80 space-y-2 overflow-auto pr-1">
             {r.claims.map((claim, i) => (
               <div key={i} className={`rounded-lg border p-3 text-sm ${VERDICT_STYLES[claim.verdict]}`}>
@@ -62,6 +75,15 @@ export default function Module2Panel({ state }: { state: FetchState<Module2Resul
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {showJsonExport && (
+        <div className="mt-4 space-y-2">
+          <p className="text-xs font-medium text-slate-400">
+            Raw JSON — download this to use on the Module 1 combine page
+          </p>
+          <JsonBlock data={r} downloadName={downloadName} />
         </div>
       )}
     </PanelShell>

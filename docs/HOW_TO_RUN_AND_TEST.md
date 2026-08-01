@@ -112,6 +112,52 @@ Open http://localhost:3000 — type or upload an essay, click
 clicking, the Module 1 and Module 2 panels appear as each finishes,
 followed by Recommendations and the Combined Output (with Copy/Download).
 
+**This page (`/`) needs BOTH Module 1 and Module 2 running at once.** If
+your machine can't handle that (see the memory warnings throughout this
+doc), use the two-step workflow below instead — same frontend app, no
+extra install, just two different pages that each need only one backend
+up at a time.
+
+---
+
+## Running one backend at a time instead
+
+For machines where running Module 1 and Module 2 together causes the
+memory crash described earlier. Same frontend (`npm run dev`, already
+running from step 3) — just two different pages instead of `/`.
+
+### Step A — Module 2 alone
+
+1. Make sure **only Module 2** is running (stop Module 1 if it's up).
+2. Open **http://localhost:3000/module2-only**.
+3. Enter/upload the essay, click **"Get Feedback for Essay"**.
+4. You'll see Module 2's full result: accuracy %, confidence, and
+   Correct/Incorrect/Unverifiable/Editorial counts, plus every claim's
+   LLM output (verdict, explanation, teacher feedback for wrong claims).
+5. Scroll down to **"Raw JSON"** and click **Download** — save this file
+   somewhere you'll find it again (e.g. `module2_result.json`).
+
+### Step B — switch to Module 1 alone
+
+1. Stop Module 2, start Module 1 instead (`venv\Scripts\python app.py`
+   from `module_1/`) — Module 2 does not need to be running at all for
+   this step.
+2. Open **http://localhost:3000/module1-combine**.
+3. Enter the **exact same essay text** again (Module 1 needs the raw
+   essay itself to compute D2/D3/D4 — the JSON alone isn't enough).
+4. Upload the JSON file you downloaded in Step A.
+5. Click **"Score & Combine"**. Module 1 scores D2-D4 itself, merges it
+   with the D1 data from your uploaded JSON, and shows the exact same
+   combined result (`Historical Accuracy(D1)` + the other three
+   dimensions, Recommendations, Combined Output with Copy/Download) that
+   the main `/` page would have produced with both backends running
+   together — just computed in two separate steps instead of one.
+
+This uses Module 1's `POST /score-offline` endpoint under the hood — see
+`module_1/app.py` — which accepts a Module 2 result JSON instead of
+calling Module 2's API live. Verified working end-to-end with Module 2
+fully stopped before calling it.
+
 ---
 
 ## Testing the APIs directly with Postman

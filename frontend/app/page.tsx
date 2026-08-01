@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { callModule1, fetchCombinedPayload, type EssayInput } from "@/lib/api";
 import type { CombinedModule3Payload, FetchState, Module1Result, Module2Result } from "@/lib/types";
 import EssayForm from "@/components/EssayForm";
@@ -88,7 +89,18 @@ export default function Home() {
         <p className="mt-2 text-sm text-slate-400">
           Enter an essay (or upload a .txt file) to get writing-quality feedback (Module 1) and
           Knowledge-Graph-grounded historical-accuracy feedback (Module 2), combined into a single
-          4-dimension result.
+          4-dimension result. Requires both Module 1 and Module 2 running at once.
+        </p>
+        <p className="mt-3 text-xs text-slate-500">
+          Can&apos;t run both backends at once?{" "}
+          <Link href="/module2-only" className="text-indigo-400 hover:text-indigo-300">
+            Run Module 2 alone
+          </Link>{" "}
+          and{" "}
+          <Link href="/module1-combine" className="text-indigo-400 hover:text-indigo-300">
+            Module 1 alone with an uploaded Module 2 JSON
+          </Link>{" "}
+          instead — one backend at a time.
         </p>
       </header>
 

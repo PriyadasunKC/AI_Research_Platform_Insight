@@ -64,6 +64,33 @@ export async function callModule2(input: EssayInput, submittedBy: string): Promi
   return response.json();
 }
 
+/** Module 1's /score-offline — for when Module 2 ISN'T running on this
+ * machine. Instead of Module 1 calling Module 2 itself, you supply a
+ * Module 2 result JSON you already have (e.g. downloaded from the
+ * standalone Module 2 page earlier, while Module 2 WAS running). Module 1
+ * still scores D2-D4 itself and merges everything into the identical
+ * combined output /score produces. See module_1/app.py's /score-offline. */
+export async function callModule1Offline(
+  input: EssayInput,
+  module2Json: File,
+  essayId: string,
+): Promise<Module1Result> {
+  const form = new FormData();
+  if ("file" in input) {
+    form.append("essay_file", input.file);
+  } else {
+    form.append("essay_text", input.text);
+  }
+  form.append("module2_file", module2Json);
+  form.append("essay_id", essayId);
+
+  const response = await fetch(`${MODULE1_BASE_URL}/score-offline`, { method: "POST", body: form });
+  if (!response.ok) {
+    throw new Error(`Module 1: ${await readErrorMessage(response)}`);
+  }
+  return response.json();
+}
+
 /** Fetches the final combined Module-3 payload Module 1 already built and
  * saved during its /score call (see module_1/app.py's
  * GET /api/v1/module3/<essay_id>) — reads it back rather than
