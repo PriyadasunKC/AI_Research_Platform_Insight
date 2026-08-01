@@ -56,6 +56,15 @@ export default function Module2Panel({
         </p>
       )}
 
+      {r.combined_teacher_feedback && (
+        <div className="mt-4 rounded-lg border border-indigo-800 bg-indigo-950/30 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-300">
+            Teacher Feedback — All Claims
+          </p>
+          <p className="mt-2 whitespace-pre-line text-sm text-slate-200">{r.combined_teacher_feedback}</p>
+        </div>
+      )}
+
       {r.claims.length > 0 && (
         <div className="mt-4 space-y-2">
           <p className="text-xs font-medium text-slate-400">Claim-by-claim verdicts (LLM output)</p>

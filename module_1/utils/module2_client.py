@@ -154,12 +154,18 @@ def build_d1_note(module2_call: dict) -> dict:
         "what_wrong": what_wrong,
         "how_to_improve": how_to_improve,
         "short_note_si": short_note_si,
+        # Every claim's individual teacher_feedback (1-sentence affirmations
+        # for CORRECT, 2-3 sentence corrections for INCORRECT) already
+        # joined into one block by Module 2 (see essay_accuracy_checker.py's
+        # aggregate_results) — forwarded as-is rather than re-joining the
+        # per-claim list below, so this can't drift from Module 2's own
+        # combined_teacher_feedback field if that joining logic ever changes.
+        "combined_teacher_feedback": r.get("combined_teacher_feedback", ""),
         # Per-claim detail — what specifically was correct/incorrect/
-        # unverifiable and why, plus the teacher-style corrective feedback
-        # Module 2 already generates for wrong claims. Module 2 computes
-        # all of this already (see essay_accuracy_checker.py); this just
-        # forwards it into the combined payload instead of only the
-        # aggregate counts above, so Module 3 gets the actual evidence,
+        # unverifiable and why, plus each claim's own teacher_feedback.
+        # Module 2 computes all of this already (see essay_accuracy_checker.py);
+        # this just forwards it into the combined payload instead of only
+        # the aggregate counts above, so Module 3 gets the actual evidence,
         # not just a summary.
         "claims": [
             {

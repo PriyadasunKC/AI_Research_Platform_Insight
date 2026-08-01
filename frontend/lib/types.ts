@@ -72,6 +72,7 @@ export type Module2Result = {
   batch_count: number;
   essay_sentence_count: number;
   claims: Module2Claim[];
+  combined_teacher_feedback: string;
   processing_seconds: number;
 };
 

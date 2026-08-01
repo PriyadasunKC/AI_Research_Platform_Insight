@@ -277,6 +277,7 @@ def save_essay_check_run(
             "batch_count":          result.batch_count,
             "essay_sentence_count": result.essay_sentence_count,
             "kg_facts_text":        result.kg_facts_text,
+            "combined_teacher_feedback": result.combined_teacher_feedback,
             "all_claim_results": [_claim_to_dict(c) for c in result.all_claim_results],
             "batch_logs": [
                 {

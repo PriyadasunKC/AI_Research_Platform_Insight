@@ -27,8 +27,12 @@ CLAUDE_MODEL: str = "claude-sonnet-4-6"
 # claims are INCORRECT (each adds a 2-3 sentence teacher_feedback on top of
 # explanation) — Claude would hit the ceiling mid-batch and the remaining
 # claims fell to the truncation-recovery fallback (see call_claude_batch).
-# Raised to give headroom; the fallback stays in place regardless as a backstop.
-MAX_TOKENS:   int = 4096
+# Raised to 4096, then to 6144 once teacher_feedback started being written
+# for CORRECT claims too (build_claude_system_prompt STEP 4) — CORRECT is
+# typically the majority verdict in a batch, so this adds a real amount of
+# extra output even though each individual note is kept to 1 sentence.
+# The truncation-recovery fallback stays in place regardless as a backstop.
+MAX_TOKENS:   int = 6144
 MAX_SENTENCES_PER_BATCH: int = 6
 MIN_VERIFIABLE_FOR_HIGH_CONFIDENCE: int = 5
 LOW_COVERAGE_THRESHOLD: float = 0.30
@@ -51,12 +55,12 @@ class ClaimResult:
     explanation: str            # Sinhala explanation sentence + English KG relation.
                                  # Format: "KG fact N සමඟ ගැළපේ — Subject RELATION Object (period)"
                                  # Example: "KG fact 5 සමඟ ගැළපේ — දුටුගැමුණු BUILT රුවන්වැලිසෑය (ක්‍රි.පූ. 161-137)"
-    teacher_feedback: Optional[str]  # Sinhala corrective feedback in a history-teacher's voice,
-                                 # set ONLY when verdict == "INCORRECT" (None otherwise — this is
-                                 # intentionally scoped to wrong claims only, to keep Claude's
-                                 # output bounded; see feedback_llm_response_recovery.md).
-                                 # States what the student wrote, why it's wrong, and the correct
-                                 # fact per the KG, in a constructive, encouraging tone.
+    teacher_feedback: Optional[str]  # Sinhala feedback in a history-teacher's voice, set for
+                                 # both INCORRECT (corrective, 2-3 sentences: what the student
+                                 # wrote, why it's wrong, the correct fact) and CORRECT (brief,
+                                 # 1-sentence affirmation) verdicts — None only for UNVERIFIABLE,
+                                 # since there's nothing to affirm or correct about a claim the
+                                 # KG couldn't check either way.
     batch_number: int
 
 
@@ -95,6 +99,9 @@ class AccuracyResult:
     all_claim_results: list[ClaimResult] = field(default_factory=list)
     batch_logs: list[BatchLog] = field(default_factory=list)
     kg_facts_text: str = ""
+    combined_teacher_feedback: str = ""  # every claim's teacher_feedback (CORRECT + INCORRECT)
+                                          # joined into one Sinhala block, in claim order — see
+                                          # aggregate_results()
 
 
 # ESSAY SUBJECT IDENTIFICATION
@@ -264,31 +271,44 @@ reasoning, caveats, or additional sentences. Every claim in the batch must
 receive a complete response; verbose explanations are the most common
 cause of the response being cut off before all claims finish.
 
-━━━ STEP 4: TEACHER FEEDBACK FOR INCORRECT CLAIMS ONLY ━━━
+━━━ STEP 4: TEACHER FEEDBACK FOR CORRECT AND INCORRECT CLAIMS ━━━
 
-ONLY when verdict = "INCORRECT", also write a teacher_feedback field:
-2-3 sentences of natural Sinhala, in the voice of a kind but precise
-history teacher (ඉතිහාස ගුරුවරයෙක්) correcting a student's essay.
-Structure:
+Write a teacher_feedback field for BOTH "INCORRECT" and "CORRECT"
+verdicts (never for "UNVERIFIABLE" — set teacher_feedback = null there,
+since there's nothing to affirm or correct about a claim the KG couldn't
+check either way). In both cases, the voice is a kind but precise history
+teacher (ඉතිහාස ගුරුවරයෙක්).
+
+If verdict = "INCORRECT" — 2-3 sentences, corrective:
   1. Note what the student wrote (briefly, in your own words).
   2. Explain concisely why it does not match the historical record (per KG).
   3. State the correct fact clearly, so the student learns it.
-Tone: constructive and encouraging, never harsh — this is feedback meant
-to help the student improve, not to criticize them.
+  Tone: constructive and encouraging, never harsh.
 
-Example:
-  Essay claim: "දුටුගැමුණු රජු එළාර රජු පරාජය කළේ ක්‍රි.පූ. 200 දී ය."
-  KG fact: දුටුගැමුණු DEFEATED එළාර (කාලය: ක්‍රි.පූ. 161-137)
-  teacher_feedback: "ඔබ මෙම සිදුවීම ක්‍රි.පූ. 200 දී සිදු වූ බව ලියා ඇත.
-  නමුත් ඓතිහාසික වාර්තා අනුව දුටුගැමුණු රජු එළාර රජු පරාජය කළේ
-  ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනයන් නිවැරදිව සටහන් කර ගැනීම
-  ඉතිහාස රචනයේදී වැදගත් වේ."
+  Example:
+    Essay claim: "දුටුගැමුණු රජු එළාර රජු පරාජය කළේ ක්‍රි.පූ. 200 දී ය."
+    KG fact: දුටුගැමුණු DEFEATED එළාර (කාලය: ක්‍රි.පූ. 161-137)
+    teacher_feedback: "ඔබ මෙම සිදුවීම ක්‍රි.පූ. 200 දී සිදු වූ බව ලියා ඇත.
+    නමුත් ඓතිහාසික වාර්තා අනුව දුටුගැමුණු රජු එළාර රජු පරාජය කළේ
+    ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනයන් නිවැරදිව සටහන් කර ගැනීම
+    ඉතිහාස රචනයේදී වැදගත් වේ."
 
-For every other verdict (CORRECT, UNVERIFIABLE) set teacher_feedback = null
-— never write feedback for a claim that isn't factually wrong. Keep this
-field to 2-3 sentences maximum — the same brevity requirement as STEP 3
-applies here, since it only applies to the (typically few) INCORRECT
-claims, the total added length should stay small.
+If verdict = "CORRECT" — EXACTLY 1 short sentence, affirming:
+  Confirm the fact is right and, where natural, briefly say why it matters
+  or add one word of encouragement. Do NOT restate the full explanation —
+  that's already in the explanation field; this is a short human note on
+  top of it. Keep this genuinely brief — one clause is enough.
+
+  Example:
+    Essay claim: "දුටුගැමුණු රජු රුවන්වැලිසෑය ඉදිකළේය."
+    teacher_feedback: "නිවැරදියි — මෙම ඓතිහාසික කරුණ ඔබ හරියටම හඳුනාගෙන ඇත."
+
+Brevity matters here more than usual: with teacher_feedback now written
+for every CORRECT claim too (typically the majority in a batch), not just
+the few INCORRECT ones, uncontrolled length is the most likely cause of
+the response being cut off before all claims finish — keep INCORRECT
+feedback to 2-3 sentences and CORRECT feedback to exactly 1, as specified
+above, no exceptions.
 
 ━━━ OUTPUT FORMAT ━━━
 
@@ -303,7 +323,7 @@ Return ONLY valid JSON. No preamble. No markdown fences. No explanation outside 
       "unverifiable_reason": "NOT_IN_KG" | "NOT_FACTUAL" | null,
       "matched_kg_fact": "<KG fact number and full text, or N/A>",
       "explanation": "<Sinhala explanation + English KG relation as specified above>",
-      "teacher_feedback": "<Sinhala corrective feedback in a history teacher's voice, ONLY if verdict is INCORRECT, else null>"
+      "teacher_feedback": "<Sinhala feedback in a history teacher's voice — corrective (2-3 sentences) if INCORRECT, affirming (1 sentence) if CORRECT, null if UNVERIFIABLE>"
     }}
   ],
   "batch_correct": <int>,
@@ -436,8 +456,9 @@ def _normalize_claim_fields(c: dict) -> tuple[str, str, Optional[str], Optional[
     ("INCORRECT") disagreed with its own explanation text (which argued
     for, and concluded with, "UNVERIFIABLE"). Enforcing the EDITORIAL ⇒
     UNVERIFIABLE/NOT_FACTUAL rule, clearing unverifiable_reason for
-    CORRECT/INCORRECT verdicts, and clearing teacher_feedback for anything
-    other than INCORRECT here guarantees these invariants hold even when
+    CORRECT/INCORRECT verdicts, and clearing teacher_feedback only for
+    UNVERIFIABLE (kept for both CORRECT and INCORRECT — see build_claude_
+    system_prompt STEP 4) here guarantees these invariants hold even when
     the model's own output is inconsistent.
     """
     claim_type = str(c.get("claim_type", "FACTUAL")).strip().upper()
@@ -463,11 +484,12 @@ def _normalize_claim_fields(c: dict) -> tuple[str, str, Optional[str], Optional[
         # the more common case (simply absent from the KG).
         reason = "NOT_IN_KG"
 
-    # teacher_feedback is meaningful only for genuinely wrong claims — a
-    # correction only makes sense when something needs correcting.
+    # teacher_feedback applies to CORRECT (affirming) and INCORRECT
+    # (corrective) claims — cleared only for UNVERIFIABLE, where there's
+    # nothing to affirm or correct either way.
     raw_feedback = c.get("teacher_feedback")
     teacher_feedback = str(raw_feedback).strip() if raw_feedback else None
-    if verdict != "INCORRECT":
+    if verdict == "UNVERIFIABLE":
         teacher_feedback = None
 
     return claim_type, verdict, reason, teacher_feedback
@@ -679,6 +701,16 @@ def aggregate_results(
         else "INSUFFICIENT_KG"
     )
 
+    # Every claim's individual teacher_feedback (both the 1-sentence CORRECT
+    # affirmations and the 2-3 sentence INCORRECT corrections — see
+    # build_claude_system_prompt STEP 4) joined into one Sinhala block, in
+    # claim order, so a caller that wants a single piece of feedback text
+    # for the whole essay (rather than iterating all_claim_results itself)
+    # has one. UNVERIFIABLE claims have no teacher_feedback and are skipped.
+    combined_teacher_feedback = "\n".join(
+        c.teacher_feedback for c in all_claim_results if c.teacher_feedback
+    )
+
     return AccuracyResult(
         essay_subject=essay_subject,
         all_kings_found=all_kings_found,
@@ -700,6 +732,7 @@ def aggregate_results(
         all_claim_results=all_claim_results,
         batch_logs=batch_logs,
         kg_facts_text=kg_facts_text,
+        combined_teacher_feedback=combined_teacher_feedback,
     )
 
 

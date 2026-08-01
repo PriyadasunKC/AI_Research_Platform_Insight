@@ -151,6 +151,7 @@ class EssayCheckResponse(BaseModel):
     batch_count: int
     essay_sentence_count: int
     claims: list[ClaimResponse]
+    combined_teacher_feedback: str  # every claim's teacher_feedback joined into one block
     processing_seconds: float
 
 
@@ -260,6 +261,7 @@ def _run_and_save(essay_text: str, caller: str, submitted_by: Optional[str]) -> 
         batch_count=result.batch_count,
         essay_sentence_count=result.essay_sentence_count,
         claims=[_claim_to_response(c) for c in result.all_claim_results],
+        combined_teacher_feedback=result.combined_teacher_feedback,
         processing_seconds=round(elapsed, 2),
     )
 
