@@ -17,7 +17,7 @@ export default function RecommendationsPanel({ state }: { state: FetchState<Comb
   const { notes, weakest_area } = state.data;
 
   const entries = Object.entries(notes)
-    .filter(([, note]) => note && (note.how_to_improve || note.short_note_si))
+    .filter(([, note]) => note && (note.how_to_improve || note.short_note_si || note.combined_teacher_feedback))
     .sort(([, a], [, b]) => {
       const scoreA = a.score ?? Number.POSITIVE_INFINITY;
       const scoreB = b.score ?? Number.POSITIVE_INFINITY;
@@ -67,6 +67,9 @@ function RecommendationCard({ label, note }: { label: string; note: DimensionNot
       </div>
       {note.how_to_improve && <p className="mt-2 text-sm text-slate-300">{note.how_to_improve}</p>}
       {note.short_note_si && <p className="mt-1 text-sm text-slate-400">{note.short_note_si}</p>}
+      {note.combined_teacher_feedback && (
+        <p className="mt-2 whitespace-pre-line text-sm text-slate-300">{note.combined_teacher_feedback}</p>
+      )}
     </div>
   );
 }

@@ -5,10 +5,15 @@
 // reads, not a strict contract.
 
 export type DimensionNote = {
-  score: number | null;
+  // D2/D3/D4 notes carry all of these; the combined output's D1 note is
+  // deliberately minimal (see module_1/utils/module2_client.py's
+  // build_d1_note) — only combined_teacher_feedback and short_note_si, no
+  // "score" — so every field here must tolerate being absent.
+  score?: number | null;
   what_wrong?: string;
   how_to_improve?: string;
   short_note_si?: string;
+  combined_teacher_feedback?: string;
   [key: string]: unknown;
 };
 

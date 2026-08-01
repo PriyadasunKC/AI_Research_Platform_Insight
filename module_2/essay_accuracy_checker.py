@@ -298,13 +298,26 @@ If verdict = "INCORRECT" - 2-3 sentences, corrective, neutral tone:
     ක්‍රි.පූ. 161-137 කාලය තුළදීය. දිනය නිවැරදි කර ගන්න."
 
 If verdict = "CORRECT" - EXACTLY 1 short sentence, neutral statement of
-fact only - confirm it matches the historical record, nothing more. Do
-NOT restate the full explanation (that's already in the explanation
-field) and do NOT add praise or encouragement.
+fact only. Do NOT add praise or encouragement.
 
-  Example:
+MUST name the specific fact from THIS claim inside the sentence — WHO did
+WHAT (or the specific relationship/date) — using the fixed pattern
+"<claim's specific fact, paraphrased briefly> බව ඓතිහාසික වාර්තා සමඟ
+ගැළපේ." Every claim's teacher_feedback must therefore read differently
+from every other claim's, in the same way explanation already differs per
+claim. NEVER output the bare generic sentence "මෙම කරුණ ඓතිහාසික වාර්තා
+සමඟ ගැළපේ." with no specific fact named — that sentence, repeated
+verbatim across multiple claims with no distinguishing content, is
+exactly the failure this rule exists to prevent.
+
+  Examples (note each names the specific fact — this is not optional):
     Essay claim: "දුටුගැමුණු රජු රුවන්වැලිසෑය ඉදිකළේය."
-    teacher_feedback: "මෙම කරුණ ඓතිහාසික වාර්තා සමඟ ගැළපේ."
+    teacher_feedback: "දුටුගැමුණු රජු රුවන්වැලිසෑය ඉදිකළ බව ඓතිහාසික
+    වාර්තා සමඟ ගැළපේ."
+
+    Essay claim: "ඔහු කාවන්තිස්ස රජුගේ පුත්‍රයා විය."
+    teacher_feedback: "දුටුගැමුණු කාවන්තිස්ස රජුගේ පුත්‍රයා බව ඓතිහාසික
+    වාර්තා සමඟ ගැළපේ."
 
 Brevity matters here more than usual: with teacher_feedback now written
 for every CORRECT claim too (typically the majority in a batch), not just

@@ -93,45 +93,33 @@ def check_historical_accuracy(essay_text: str, submitted_by: Optional[str] = Non
 
 
 def build_d1_note(module2_call: dict) -> dict:
-    """Build a D1_note block shaped like the D2_note/D3_note/D4_note blocks
-    in models/rule_based_scorer.py, so utils/export_module3.py's existing
-    _rename_note_keys() logic handles it identically - no changes needed
-    there. See rule_based_scorer.py's _d2_what_wrong/_d2_how_to_improve for
-    the sibling pattern this follows.
+    """Build the D1 note for the COMBINED (Module 1 + Module 2) output only.
 
-    On success also includes a "claims" list - every claim Module 2 graded,
-    with its verdict, explanation, and (for INCORRECT claims) the teacher-
-    style corrective feedback text - so the combined payload sent to
-    Module 3 carries the actual per-claim evidence of what was correct/
-    incorrect, not just the aggregate correct_claims/incorrect_claims
-    counts.
+    Deliberately minimal — just two fields, on purpose:
+        {"combined_teacher_feedback": "...", "short_note_si": "..."}
+
+    Module 2's own full result (accuracy_score, confidence_level,
+    coverage_ratio, correct/incorrect/kg_gap counts, the per-claim "claims"
+    array, etc.) is NOT duplicated here — that full detail already exists
+    in Module 2's own API response / the standalone Module 2 page's
+    download (see module_2/api_server.py's EssayCheckResponse). This note
+    is only what the combined Module 1+2 payload shows for D1; the numeric
+    D1 score itself lives in the combined payload's top-level "scores"
+    dict (via accuracy_to_d1(), computed in app.py), not in this note.
     """
     if not module2_call.get("ok"):
         error = module2_call.get("error", "Unknown error.")
         return {
-            "score": None,
-            "what_wrong": f"Could not verify historical accuracy - {error}",
-            "how_to_improve": "Ensure Module 2 (the Knowledge Graph accuracy checker) is running and reachable, then re-submit.",
-            "short_note_si": "ඓතිහාසික නිරවද්‍යතාව පරීක්ෂා කළ නොහැකි විය - Module 2 සමඟ සම්බන්ධතාවයක් නොමැත.",
+            "combined_teacher_feedback": "",
+            "short_note_si": f"ඓතිහාසික නිරවද්‍යතාව පරීක්ෂා කළ නොහැකි විය - Module 2 සමඟ සම්බන්ධතාවයක් නොමැත. ({error})",
         }
 
     r = module2_call["raw"]
     accuracy = r.get("accuracy_score")
-    d1_score = accuracy_to_d1(accuracy)
     incorrect = r.get("incorrect_claims", 0)
     correct = r.get("correct_claims", 0)
     kg_gap = r.get("kg_gap_claims", 0)
     coverage_warning = r.get("coverage_warning", False)
-
-    if accuracy is None:
-        what_wrong = "No factual claims in this essay could be verified against the Knowledge Graph."
-        how_to_improve = "Include more specific, checkable historical facts (dates, relationships, events) about the king(s) discussed."
-    elif incorrect > 0:
-        what_wrong = f"{incorrect} claim(s) contradicted the Knowledge Graph out of {correct + incorrect} checkable claims."
-        how_to_improve = "Review the incorrect claims below and correct them against the historical record."
-    else:
-        what_wrong = "All checkable factual claims matched the Knowledge Graph."
-        how_to_improve = "Maintain this level of factual accuracy."
 
     short_note_si = (
         f"ඓතිහාසික නිරවද්‍යතාව: {accuracy}% ({correct} නිවැරදි, {incorrect} වැරදි, "
@@ -143,40 +131,6 @@ def build_d1_note(module2_call: dict) -> dict:
         short_note_si += " (අවවාදයයි: Knowledge Graph ආවරණය අඩුය - මෙම ලකුණ සීමිත සාක්ෂි මතය.)"
 
     return {
-        "score": d1_score,
-        "accuracy_percent": accuracy,
-        "confidence_level": r.get("confidence_level"),
-        "coverage_ratio": r.get("coverage_ratio"),
-        "coverage_warning": coverage_warning,
-        "correct_claims": correct,
-        "incorrect_claims": incorrect,
-        "kg_gap_claims": kg_gap,
-        "what_wrong": what_wrong,
-        "how_to_improve": how_to_improve,
-        "short_note_si": short_note_si,
-        # Every claim's individual teacher_feedback (1-sentence affirmations
-        # for CORRECT, 2-3 sentence corrections for INCORRECT) already
-        # joined into one block by Module 2 (see essay_accuracy_checker.py's
-        # aggregate_results) - forwarded as-is rather than re-joining the
-        # per-claim list below, so this can't drift from Module 2's own
-        # combined_teacher_feedback field if that joining logic ever changes.
         "combined_teacher_feedback": r.get("combined_teacher_feedback", ""),
-        # Per-claim detail - what specifically was correct/incorrect/
-        # unverifiable and why, plus each claim's own teacher_feedback.
-        # Module 2 computes all of this already (see essay_accuracy_checker.py);
-        # this just forwards it into the combined payload instead of only
-        # the aggregate counts above, so Module 3 gets the actual evidence,
-        # not just a summary.
-        "claims": [
-            {
-                "claim_sinhala": c.get("claim_sinhala"),
-                "claim_type": c.get("claim_type"),
-                "verdict": c.get("verdict"),
-                "unverifiable_reason": c.get("unverifiable_reason"),
-                "matched_kg_fact": c.get("matched_kg_fact"),
-                "explanation": c.get("explanation"),
-                "teacher_feedback": c.get("teacher_feedback"),
-            }
-            for c in r.get("claims", [])
-        ],
+        "short_note_si": short_note_si,
     }
