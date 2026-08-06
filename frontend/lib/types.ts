@@ -61,7 +61,8 @@ export type Module2Result = {
   caller: string;
   essay_subject: string;
   all_kings_found: string[];
-  accuracy_score: number | null;
+  accuracy_score: number | null; // harmonic mean of factual_precision & coverage_ratio
+  factual_precision: number | null; // correct/(correct+incorrect) alone, for transparency
   coverage_ratio: number;
   confidence_level: "HIGH" | "LOW" | "INSUFFICIENT_KG";
   coverage_warning: boolean;

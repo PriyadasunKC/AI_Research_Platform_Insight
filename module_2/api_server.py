@@ -135,7 +135,8 @@ class EssayCheckResponse(BaseModel):
     caller: str
     essay_subject: str
     all_kings_found: list[str]
-    accuracy_score: Optional[float]
+    accuracy_score: Optional[float]  # harmonic mean of factual_precision & coverage_ratio
+    factual_precision: Optional[float]  # correct / (correct + incorrect) alone, for transparency
     coverage_ratio: float
     confidence_level: str
     coverage_warning: bool
@@ -246,6 +247,7 @@ def _run_and_save(essay_text: str, caller: str, submitted_by: Optional[str]) -> 
         essay_subject=result.essay_subject,
         all_kings_found=result.all_kings_found,
         accuracy_score=result.accuracy_score,
+        factual_precision=result.factual_precision,
         coverage_ratio=result.coverage_ratio,
         confidence_level=result.confidence_level,
         coverage_warning=result.coverage_warning,

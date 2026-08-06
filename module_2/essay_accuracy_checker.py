@@ -81,7 +81,12 @@ class BatchLog:
 class AccuracyResult:
     essay_subject: str
     all_kings_found: list[str]
-    accuracy_score: Optional[float]     # Factual Precision 0-100, None if no verifiable claims
+    accuracy_score: Optional[float]     # Harmonic mean of factual_precision & coverage_ratio,
+                                         # 0-100, None if no verifiable claims (see
+                                         # aggregate_results for the full justification)
+    factual_precision: Optional[float]  # correct / (correct + incorrect), 0-100, None if no
+                                         # verifiable claims - raw precision-only figure, kept
+                                         # separate from accuracy_score for transparency
     coverage_ratio: float               # (correct + incorrect) / total_factual_claims
     confidence_level: str               # "HIGH" | "LOW" | "INSUFFICIENT_KG"
     coverage_warning: bool              # True if coverage_ratio < 0.30
@@ -207,7 +212,7 @@ Your ONLY source of historical truth is the provided KG facts.
 Do NOT use your own historical knowledge to confirm or contradict any claim.
 If a fact is not in the KG, it is UNVERIFIABLE - not incorrect.
 
-━━━ STEP 1: CLASSIFY EACH CLAIM ━━━
+STEP 1: CLASSIFY EACH CLAIM
 
 For every sentence or key claim in the essay, first assign claim_type:
 
@@ -229,7 +234,7 @@ claim_type = "FACTUAL" when the sentence describes:
   - An alternative name or title
   - Any proposition that a sufficiently complete KG could in principle verify
 
-━━━ STEP 2: GRADE FACTUAL CLAIMS ONLY ━━━
+STEP 2: GRADE FACTUAL CLAIMS ONLY
 
 For each FACTUAL claim:
 
@@ -258,7 +263,7 @@ UNVERIFIABLE with unverifiable_reason = "NOT_IN_KG" - when:
   - No KG fact confirms or contradicts it
   - The claim is simply absent from the provided KG facts
 
-━━━ STEP 3: EXPLANATION FORMAT ━━━
+STEP 3: EXPLANATION FORMAT
 
 For every claim write explanation in this exact format:
   If CORRECT: "KG fact [N] සමඟ ගැළපේ - [Subject] [RELATION] [Object] ([period])"
@@ -271,7 +276,7 @@ reasoning, caveats, or additional sentences. Every claim in the batch must
 receive a complete response; verbose explanations are the most common
 cause of the response being cut off before all claims finish.
 
-━━━ STEP 4: TEACHER FEEDBACK FOR CORRECT AND INCORRECT CLAIMS ━━━
+STEP 4: TEACHER FEEDBACK FOR CORRECT AND INCORRECT CLAIMS
 
 Write a teacher_feedback field for BOTH "INCORRECT" and "CORRECT"
 verdicts (never for "UNVERIFIABLE" - set teacher_feedback = null there,
@@ -326,7 +331,7 @@ the response being cut off before all claims finish - keep INCORRECT
 feedback to 2-3 sentences and CORRECT feedback to exactly 1, as specified
 above, no exceptions.
 
-━━━ OUTPUT FORMAT ━━━
+OUTPUT FORMAT
 
 Return ONLY valid JSON. No preamble. No markdown fences. No explanation outside JSON.
 
@@ -648,46 +653,7 @@ def aggregate_results(
     batch_logs: list[BatchLog],
     kg_facts_text: str,
 ) -> AccuracyResult:
-    # ── Scoring methodology ────────────────────────────────────────────
-    # Only FACTUAL claims participate in scoring.
-    # EDITORIAL claims are displayed to the user but excluded from all
-    # score denominators. This follows the claim_type classification
-    # defined in the Claude prompt (see build_claude_system_prompt).
-    #
-    # Factual Precision = correct / (correct + incorrect)
-    #   Measures how accurate the verifiable factual claims are.
-    #   Range: 0.0–1.0 (reported as 0–100 in the UI).
-    #   None if (correct + incorrect) == 0 (no verifiable factual claims).
-    #
-    # KG Coverage Ratio = (correct + incorrect) / total_factual_claims
-    #   Measures what fraction of the essay's factual claims the current
-    #   KG can verify or refute. Excludes EDITORIAL claims from the
-    #   denominator so essay writing style does not depress coverage.
-    #   coverage_warning = True when KG Coverage Ratio < 0.30.
-    #
-    # Confidence Level:
-    #   HIGH            - (correct + incorrect) >= 5
-    #   LOW             - (correct + incorrect) >= 1 and < 5
-    #   INSUFFICIENT_KG - (correct + incorrect) == 0
-    #
-    # Threshold justification (5 for HIGH confidence):
-    #   A minimum of 5 verifiable claims is required for Factual Precision
-    #   to be statistically meaningful. With fewer observations the score
-    #   is sensitive to a single claim changing verdict - e.g. 1 correct
-    #   out of 1 gives 100% but is not informative. This threshold is
-    #   consistent with minimum-sample-size practice in precision-based
-    #   NLP evaluation (Manning & Schütze, 1999).
-    #
-    #   Empirical check against this system: the test run on the 5-sentence
-    #   Dutugamunu essay (දුටුගැමුණු රජතුමා.txt) produced 3 verifiable
-    #   factual claims (3 correct, 0 incorrect) out of 5 factual claims
-    #   total (1 sentence was classified EDITORIAL and excluded) - below
-    #   the threshold, so confidence_level was correctly LOW, not HIGH,
-    #   for that essay. This is expected for a short essay; a longer or
-    #   more fact-dense essay would be expected to cross the 5-claim
-    #   threshold into HIGH. The LOW result on a short input is evidence
-    #   the threshold is doing its job, not a defect.
-    # ──────────────────────────────────────────────────────────────────
+    
     total_claims = len(all_claim_results)
     editorial_claims = sum(1 for c in all_claim_results if c.claim_type == "EDITORIAL")
     total_factual_claims = total_claims - editorial_claims
@@ -708,9 +674,18 @@ def aggregate_results(
     not_factual_claims = sum(1 for c in all_claim_results if c.unverifiable_reason == "NOT_FACTUAL")
 
     verifiable = correct_claims + incorrect_claims
-    accuracy_score = (correct_claims / verifiable * 100) if verifiable > 0 else None
+    factual_precision = (correct_claims / verifiable) if verifiable > 0 else None
     coverage_ratio = (verifiable / total_factual_claims) if total_factual_claims > 0 else 0.0
     coverage_warning = coverage_ratio < LOW_COVERAGE_THRESHOLD
+
+    # accuracy_score = harmonic mean of factual_precision and coverage_ratio.
+    if factual_precision is not None:
+        accuracy_score = (
+            2 * (factual_precision * coverage_ratio) / (factual_precision + coverage_ratio) * 100
+        )
+    else:
+        accuracy_score = None
+
     confidence_level = (
         "HIGH" if verifiable >= MIN_VERIFIABLE_FOR_HIGH_CONFIDENCE
         else "LOW" if verifiable >= 1
@@ -731,6 +706,7 @@ def aggregate_results(
         essay_subject=essay_subject,
         all_kings_found=all_kings_found,
         accuracy_score=round(accuracy_score, 1) if accuracy_score is not None else None,
+        factual_precision=round(factual_precision * 100, 1) if factual_precision is not None else None,
         coverage_ratio=coverage_ratio,
         confidence_level=confidence_level,
         coverage_warning=coverage_warning,

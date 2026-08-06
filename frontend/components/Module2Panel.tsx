@@ -41,13 +41,19 @@ export default function Module2Panel({
       status="done"
     >
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-        <Stat label="Accuracy" value={r.accuracy_score !== null ? `${r.accuracy_score}%` : "N/A"} />
-        <Stat label="Confidence" value={r.confidence_level} />
+        <Stat label="Accuracy (F1)" value={r.accuracy_score !== null ? `${r.accuracy_score}%` : "N/A"} />
+        <Stat label="Precision" value={r.factual_precision !== null ? `${r.factual_precision}%` : "N/A"} />
+        <Stat label="Coverage" value={`${Math.round(r.coverage_ratio * 100)}%`} />
         <Stat label="Correct" value={String(r.correct_claims)} />
         <Stat label="Incorrect" value={String(r.incorrect_claims)} />
         <Stat label="Unverifiable" value={String(r.unverifiable_claims)} />
-        <Stat label="Editorial" value={String(r.editorial_claims)} />
       </div>
+
+      <p className="mt-2 text-xs text-slate-500">
+        Accuracy is the harmonic mean of Precision (correctness among checkable claims) and Coverage
+        (how much of the essay the Knowledge Graph could check)  - a low Coverage pulls Accuracy down even
+        when Precision is 100%.
+      </p>
 
       {r.coverage_warning && (
         <p className="mt-3 rounded-lg border border-amber-800 bg-amber-950/30 p-3 text-xs text-amber-300">

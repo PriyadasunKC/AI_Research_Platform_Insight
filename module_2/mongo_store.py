@@ -262,6 +262,7 @@ def save_essay_check_run(
             "essay_subject":        result.essay_subject,
             "all_kings_found":      result.all_kings_found,
             "accuracy_score":       result.accuracy_score,
+            "factual_precision":    result.factual_precision,
             "coverage_ratio":       result.coverage_ratio,
             "confidence_level":     result.confidence_level,
             "coverage_warning":     result.coverage_warning,
